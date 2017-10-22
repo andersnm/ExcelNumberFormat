@@ -17,8 +17,6 @@ Features:
 
 TODO:
 - 'General' format is parsed, but not formatted correctly
-- Locale-specific date formats are not parsed nor formatted, f.ex German `JJJJ` years, and Japanese `e` era will fail as syntax errors
-- Conditions and colors are parsed, but not used
-- Currencies and other modifiers in square brackets are ignored completely
+- Conditions and colors are parsed, but not used. Other modifiers in square brackets are skipped
 - Multi-section formats are parsed, but only the first section is used for formatting
 - And probably a lot more!

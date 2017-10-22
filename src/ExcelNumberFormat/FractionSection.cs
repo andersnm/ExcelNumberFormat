@@ -3,7 +3,7 @@ using System.Text;
 
 namespace ExcelNumberFormat
 {
-    public class FractionSection
+    internal class FractionSection
     {
         public List<string> IntegerPart { get; set; }
 

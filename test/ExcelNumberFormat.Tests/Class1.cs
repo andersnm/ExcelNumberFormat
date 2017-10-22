@@ -13,9 +13,19 @@ namespace ExcelNumberFormat.Tests
     [TestClass]
     public class Class1
     {
+
+        string Format(object value, string formatString, CultureInfo culture)
+        {
+            var format = new NumberFormat(formatString);
+            if (format.IsValid)
+                return format.Format(value, culture);
+
+            return null;
+        }
+
         bool IsDateFormatString(string formatString)
         {
-            var format = Parser.ParseNumberFormat(formatString);
+            var format = new NumberFormat(formatString);
             return format?.IsDateTimeFormat ?? false;
         }
 
@@ -68,7 +78,7 @@ namespace ExcelNumberFormat.Tests
 
         void Test(object value, string format, string expected)
         {
-            var result = Formatter.Format(value, format, CultureInfo.InvariantCulture);
+            var result = Format(value, format, CultureInfo.InvariantCulture);
             Assert.AreEqual(expected, result);
         }
 
@@ -204,35 +214,35 @@ namespace ExcelNumberFormat.Tests
         void TestExponents(double value, string expected1, string expected2, string expected3, string expected4)
         {
             // value	#0.0E+0	##0.0E+0	###0.0E+0	####0.0E+0
-            var result1 = Formatter.Format(value, "#0.0E+0", CultureInfo.InvariantCulture);
+            var result1 = Format(value, "#0.0E+0", CultureInfo.InvariantCulture);
             Assert.AreEqual(expected1, result1);
 
-            var result2 = Formatter.Format(value, "##0.0E+0", CultureInfo.InvariantCulture);
+            var result2 = Format(value, "##0.0E+0", CultureInfo.InvariantCulture);
             Assert.AreEqual(expected2, result2);
 
-            var result3 = Formatter.Format(value, "###0.0E+0", CultureInfo.InvariantCulture);
+            var result3 = Format(value, "###0.0E+0", CultureInfo.InvariantCulture);
             Assert.AreEqual(expected3, result3);
 
-            var result4 = Formatter.Format(value, "####0.0E+0", CultureInfo.InvariantCulture);
+            var result4 = Format(value, "####0.0E+0", CultureInfo.InvariantCulture);
             Assert.AreEqual(expected4, result4);
         }
 
         void TestNumber(double value, string expected1, string expected2, string expected3, string expected4, string expected5)
         {
             // value	?.?	??.??	???.???	???.?0?	???.?#?
-            var result1 = Formatter.Format(value, "?.?", CultureInfo.InvariantCulture);
+            var result1 = Format(value, "?.?", CultureInfo.InvariantCulture);
             Assert.AreEqual(expected1, result1);
 
-            var result2 = Formatter.Format(value, "??.??", CultureInfo.InvariantCulture);
+            var result2 = Format(value, "??.??", CultureInfo.InvariantCulture);
             Assert.AreEqual(expected2, result2);
 
-            var result3 = Formatter.Format(value, "???.???", CultureInfo.InvariantCulture);
+            var result3 = Format(value, "???.???", CultureInfo.InvariantCulture);
             Assert.AreEqual(expected3, result3);
 
-            var result4 = Formatter.Format(value, "???.?0?", CultureInfo.InvariantCulture);
+            var result4 = Format(value, "???.?0?", CultureInfo.InvariantCulture);
             Assert.AreEqual(expected4, result4);
 
-            var result5 = Formatter.Format(value, "???.?#?", CultureInfo.InvariantCulture);
+            var result5 = Format(value, "???.?#?", CultureInfo.InvariantCulture);
             Assert.AreEqual(expected5, result5);
         }
 
@@ -307,25 +317,25 @@ namespace ExcelNumberFormat.Tests
         void TestComma(double value, string expected1, string expected2, string expected3, string expected4, string expected5, string expected6, string expected7)
         {
             // value	#.0000,,,	#.0000,,	#.0000,	#,##0.0	###,##0	###,###	#,###.00
-            var result1 = Formatter.Format(value, "#.0000,,,", CultureInfo.InvariantCulture);
+            var result1 = Format(value, "#.0000,,,", CultureInfo.InvariantCulture);
             Assert.AreEqual(expected1, result1);
 
-            var result2 = Formatter.Format(value, "#.0000,,", CultureInfo.InvariantCulture);
+            var result2 = Format(value, "#.0000,,", CultureInfo.InvariantCulture);
             Assert.AreEqual(expected2, result2);
 
-            var result3 = Formatter.Format(value, "#.0000,", CultureInfo.InvariantCulture);
+            var result3 = Format(value, "#.0000,", CultureInfo.InvariantCulture);
             Assert.AreEqual(expected3, result3);
 
-            var result4 = Formatter.Format(value, "#,##0.0", CultureInfo.InvariantCulture);
+            var result4 = Format(value, "#,##0.0", CultureInfo.InvariantCulture);
             Assert.AreEqual(expected4, result4);
 
-            var result5 = Formatter.Format(value, "###,##0", CultureInfo.InvariantCulture);
+            var result5 = Format(value, "###,##0", CultureInfo.InvariantCulture);
             Assert.AreEqual(expected5, result5);
 
-            var result6 = Formatter.Format(value, "###,###", CultureInfo.InvariantCulture);
+            var result6 = Format(value, "###,###", CultureInfo.InvariantCulture);
             Assert.AreEqual(expected6, result6);
 
-            var result7 = Formatter.Format(value, "#,###.00", CultureInfo.InvariantCulture);
+            var result7 = Format(value, "#,###.00", CultureInfo.InvariantCulture);
             Assert.AreEqual(expected7, result7);
         }
 
@@ -352,8 +362,8 @@ namespace ExcelNumberFormat.Tests
 
         void TestValid(string format)
         {
-            var to = Parser.ParseNumberFormat(format);
-            Assert.NotNull(to);
+            var to = new NumberFormat(format);
+            Assert.IsTrue(to.IsValid, "Invalid format: {0}", format);
         }
 
         [TestMethod]

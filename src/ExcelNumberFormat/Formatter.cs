@@ -5,11 +5,16 @@ using System.Text;
 
 namespace ExcelNumberFormat
 {
-    static public class Formatter
+    static internal class Formatter
     {
         static public string Format(object value, string formatString, CultureInfo culture)
         {
-            var format = Parser.ParseNumberFormat(formatString);
+            var format = new NumberFormat(formatString);
+            return Format(value, format, culture);
+        }
+
+        static public string Format(object value, NumberFormat format, CultureInfo culture)
+        {
             var node = format.GetSection(value);
 
             if (node.Type == SectionType.Number)
@@ -132,6 +137,19 @@ namespace ExcelNumberFormat
                 {
                     var digits = token.Length;
                     result.Append(date.Second.ToString("D" + digits));
+                }
+                else if (token.StartsWith("g", StringComparison.OrdinalIgnoreCase))
+                {
+                    var era = culture.DateTimeFormat.Calendar.GetEra(date);
+                    var digits = token.Length;
+                    if (digits < 3)
+                    {
+                        result.Append(culture.DateTimeFormat.GetAbbreviatedEraName(era));
+                    }
+                    else
+                    {
+                        result.Append(culture.DateTimeFormat.GetEraName(era));
+                    }
                 }
                 else if (token.StartsWith("[h", StringComparison.OrdinalIgnoreCase))
                 {

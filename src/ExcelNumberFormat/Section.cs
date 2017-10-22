@@ -2,7 +2,7 @@
 
 namespace ExcelNumberFormat
 {
-    public class Section
+    internal class Section
     {
         public SectionType Type { get; set; }
 

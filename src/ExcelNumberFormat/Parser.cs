@@ -4,28 +4,9 @@ using System.Globalization;
 
 namespace ExcelNumberFormat
 {
-    static public class Parser
+    static internal class Parser
     {
-        static public NumberFormat ParseNumberFormat(string format)
-        {
-            var reader = new Tokenizer(format);
-            var sections = new List<Section>();
-            while (true)
-            {
-                var section = ParseSection(reader);
-                if (section == null)
-                    break;
-
-                sections.Add(section);
-            }
-
-            return new NumberFormat()
-            {
-                Sections = sections
-            };
-        }
-
-        static Section ParseSection(Tokenizer reader)
+        public static Section ParseSection(Tokenizer reader, out bool syntaxError)
         {
             bool hasDateParts = false;
             bool hasGeneralPart = false;
@@ -33,9 +14,9 @@ namespace ExcelNumberFormat
             Condition condition = null;
             Color color = null;
             string token;
-            bool syntaxError;
             List<string> tokens = new List<string>();
 
+            syntaxError = false;
             while ((token = ReadToken(reader, out syntaxError)) != null)
             {
                 if (token == ";") break;
@@ -80,7 +61,9 @@ namespace ExcelNumberFormat
                 (hasGeneralPart && (hasDateParts || hasTextPart)) ||
                 (hasTextPart && (hasGeneralPart || hasDateParts)))
             {
-                throw new Exception("Cannot mix date, general and/or text parts");
+                // Cannot mix date, general and/or text parts
+                syntaxError = true;
+                return null;
             }
 
             SectionType type;
@@ -118,7 +101,9 @@ namespace ExcelNumberFormat
             }
             else
             {
-                throw new Exception("Unable to parse format string");
+                // Unable to parse format string
+                syntaxError = true;
+                return null;
             }
 
             return new Section()
@@ -235,7 +220,9 @@ namespace ExcelNumberFormat
                 reader.ReadOneOrMore('h') ||
                 reader.ReadOneOrMore('H') ||
                 reader.ReadOneOrMore('s') ||
-                reader.ReadOneOrMore('S'))
+                reader.ReadOneOrMore('S') ||
+                reader.ReadOneOrMore('g') ||
+                reader.ReadOneOrMore('G'))
             {
                 syntaxError = false;
                 var length = reader.Position - offset;

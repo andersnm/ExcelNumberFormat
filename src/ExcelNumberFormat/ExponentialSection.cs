@@ -2,7 +2,7 @@
 
 namespace ExcelNumberFormat
 {
-    public class ExponentialSection
+    internal class ExponentialSection
     {
         public List<string> BeforeDecimal { get; set; }
 

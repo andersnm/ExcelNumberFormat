@@ -2,7 +2,7 @@
 
 namespace ExcelNumberFormat
 {
-    public class DecimalSection
+    internal class DecimalSection
     {
         public bool ThousandSeparator { get; set; }
 

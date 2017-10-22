@@ -2,7 +2,7 @@
 
 namespace ExcelNumberFormat
 {
-    public class Tokenizer
+    internal class Tokenizer
     {
         private string formatString;
         private int formatStringPosition = 0;

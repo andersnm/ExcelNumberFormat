@@ -8,7 +8,8 @@ namespace Example
     {
         static void Main(string[] args)
         {
-            var result = Formatter.Format(0.12, "[<=6e+3]# ??/\"a\"[Blue]?\"a\"0\"a\"", CultureInfo.InvariantCulture);
+            var format = new NumberFormat("[<=6e+3]# ??/\"a\"[Blue]?\"a\"0\"a\"");
+            var result = format.Format(0.12, CultureInfo.InvariantCulture);
             Console.WriteLine("\"" + result.ToString() + "\"");
         }
     }

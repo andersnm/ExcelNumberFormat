@@ -1,6 +1,6 @@
 ﻿namespace ExcelNumberFormat
 {
-    public enum SectionType
+    internal enum SectionType
     {
         General,
         Number,

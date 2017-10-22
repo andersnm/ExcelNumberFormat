@@ -2,7 +2,7 @@
 
 namespace ExcelNumberFormat
 {
-    public static class Token
+    internal static class Token
     {
         public static bool IsExponent(string token)
         {
@@ -69,6 +69,7 @@ namespace ExcelNumberFormat
                 token.StartsWith("d", StringComparison.OrdinalIgnoreCase) ||
                 token.StartsWith("s", StringComparison.OrdinalIgnoreCase) ||
                 token.StartsWith("h", StringComparison.OrdinalIgnoreCase) ||
+                (token.StartsWith("g", StringComparison.OrdinalIgnoreCase) && !IsGeneral(token)) ||
                 token.StartsWith("[h", StringComparison.OrdinalIgnoreCase) ||
                 token.StartsWith("[m", StringComparison.OrdinalIgnoreCase) ||
                 token.StartsWith("[s", StringComparison.OrdinalIgnoreCase) ||
