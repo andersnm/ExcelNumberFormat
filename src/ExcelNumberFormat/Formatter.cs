@@ -27,15 +27,20 @@ namespace ExcelNumberFormat
             {
                 case SectionType.Number:
                     return FormatNumber(Convert.ToDouble(value, culture), node.Number, culture);
+
                 case SectionType.Date:
                     return FormatDate(Convert.ToDateTime(value, culture), node.GeneralTextDateParts, culture);
+
                 case SectionType.General:
                 case SectionType.Text:
                     return FormatGeneralText(Convert.ToString(value, culture), node.GeneralTextDateParts);
+
                 case SectionType.Exponential:
                     return FormatExponential(Convert.ToDouble(value, culture), node, culture);
+
                 case SectionType.Fraction:
                     return FormatFraction(Convert.ToDouble(value, culture), node, culture);
+
                 default:
                     return "Invalid format";
             }
