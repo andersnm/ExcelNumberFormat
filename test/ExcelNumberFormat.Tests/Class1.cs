@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using ExcelNumberFormat.Exceptions;
 using NUnit.Framework;
 using TestClass = NUnit.Framework.TestFixtureAttribute;
 using TestMethod = NUnit.Framework.TestAttribute;
@@ -357,7 +358,6 @@ namespace ExcelNumberFormat.Tests
             TestComma(123456789012, "123.4568", "123456.7890", "123456789.0120", "123,456,789,012.0", "123,456,789,012", "123,456,789,012", "123,456,789,012.00");
             TestComma(4321, ".0000", ".0043", "4.3210", "4,321.0", "4,321", "4,321", "4,321.00");
             TestComma(4321234, ".0043", "4.3212", "4321.2340", "4,321,234.0", "4,321,234", "4,321,234", "4,321,234.00");
-
         }
 
         void TestValid(string format)
@@ -811,6 +811,16 @@ namespace ExcelNumberFormat.Tests
             TestValid("yyyy\\-mm\\-dd\\ h:mm");
             TestValid("yyyy\\-mm\\-dd\\Thh:mm");
             TestValid("yyyy\\-mm\\-dd\\Thhmmss.000");
+        }
+
+        [TestMethod]
+        public void TestInvalid()
+        {
+            Assert.Throws<InvalidExcelNumberFormatException>(() =>
+            {
+                var format = new NumberFormat("JHGKJG");
+                format.Format(12345, CultureInfo.InvariantCulture);
+            });
         }
     }
 }

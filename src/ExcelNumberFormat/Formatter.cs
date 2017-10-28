@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ExcelNumberFormat.Exceptions;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
@@ -16,6 +17,9 @@ namespace ExcelNumberFormat
         static public string Format(object value, NumberFormat format, CultureInfo culture)
         {
             var node = format.GetSection(value);
+
+            if (node == null)
+                throw new InvalidExcelNumberFormatException(string.Format("The format '{0}' is an invalid Excel number format.", format.FormatString));
 
             if (node.Type == SectionType.Number)
             {
@@ -37,7 +41,8 @@ namespace ExcelNumberFormat
             {
                 return FormatFraction(Convert.ToDouble(value, culture), node, culture);
             }
-            return "Invalid format";
+
+            throw new InvalidExcelNumberFormatException(string.Format("The format '{0}' is an invalid Excel number format.", format.FormatString));
         }
 
         static string FormatGeneralText(string text, List<string> tokens)
