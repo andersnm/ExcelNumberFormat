@@ -76,6 +76,15 @@ namespace ExcelNumberFormat.Tests
             Assert.IsFalse(IsDateFormatString(@"_-* #,##0\ _P_t_s_-;\-* #,##0\ _P_t_s_-;_-* "" - ""??\ _P_t_s_-;_-@_- "));
         }
 
+        [TestMethod]
+        public void TestDate()
+        {
+            Test(new DateTime(2010, 9, 26), "yyyy-MMM-dd", "2010-Sep-26");
+            Test(new DateTime(2010, 9, 26), "yyyy-MM-dd", "2010-09-26");
+            Test(new DateTime(2010, 9, 26), "mm/dd/yyyy", "09/26/2010");
+            Test(new DateTime(2010, 9, 26), "m/d/yy", "9/26/10");
+        }
+
         void Test(object value, string format, string expected)
         {
             var result = Format(value, format, CultureInfo.InvariantCulture);
