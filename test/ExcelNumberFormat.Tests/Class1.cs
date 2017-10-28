@@ -812,5 +812,20 @@ namespace ExcelNumberFormat.Tests
             TestValid("yyyy\\-mm\\-dd\\Thh:mm");
             TestValid("yyyy\\-mm\\-dd\\Thhmmss.000");
         }
+
+        [TestMethod]
+        public void TestEmptyFormatString()
+        {
+            string result;
+
+            result = Format(1234.56, string.Empty, CultureInfo.InvariantCulture);
+            Assert.AreEqual("1234.56", result);
+
+            result = Format(Double.MaxValue, string.Empty, CultureInfo.InvariantCulture);
+            Assert.AreEqual("1.79769313486232E+308", result);
+
+            result = Format(new DateTime(2017, 10, 28), string.Empty, CultureInfo.InvariantCulture);
+            Assert.AreEqual("2017-10-28 00:00:00", result);
+        }
     }
 }

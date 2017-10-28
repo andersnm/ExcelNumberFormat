@@ -15,29 +15,30 @@ namespace ExcelNumberFormat
 
         static public string Format(object value, NumberFormat format, CultureInfo culture)
         {
+            if (string.IsNullOrEmpty(format.FormatString))
+                return value.ToString();
+
             var node = format.GetSection(value);
 
-            if (node.Type == SectionType.Number)
+            if (node == null)
+                return "Invalid format";
+
+            switch (node.Type)
             {
-                return FormatNumber(Convert.ToDouble(value, culture), node.Number, culture);
+                case SectionType.Number:
+                    return FormatNumber(Convert.ToDouble(value, culture), node.Number, culture);
+                case SectionType.Date:
+                    return FormatDate(Convert.ToDateTime(value, culture), node.GeneralTextDateParts, culture);
+                case SectionType.General:
+                case SectionType.Text:
+                    return FormatGeneralText(Convert.ToString(value, culture), node.GeneralTextDateParts);
+                case SectionType.Exponential:
+                    return FormatExponential(Convert.ToDouble(value, culture), node, culture);
+                case SectionType.Fraction:
+                    return FormatFraction(Convert.ToDouble(value, culture), node, culture);
+                default:
+                    return "Invalid format";
             }
-            else if (node.Type == SectionType.Date)
-            {
-                return FormatDate(Convert.ToDateTime(value, culture), node.GeneralTextDateParts, culture);
-            }
-            else if (node.Type == SectionType.General || node.Type == SectionType.Text)
-            {
-                return FormatGeneralText(Convert.ToString(value, culture), node.GeneralTextDateParts);
-            }
-            else if (node.Type == SectionType.Exponential)
-            {
-                return FormatExponential(Convert.ToDouble(value, culture), node, culture);
-            }
-            else if (node.Type == SectionType.Fraction)
-            {
-                return FormatFraction(Convert.ToDouble(value, culture), node, culture);
-            }
-            return "Invalid format";
         }
 
         static string FormatGeneralText(string text, List<string> tokens)
