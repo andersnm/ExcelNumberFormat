@@ -216,7 +216,7 @@ namespace ExcelNumberFormat
 
         static bool LookBackDatePart(List<string> tokens, int fromIndex, string startsWith)
         {
-            for (var i = fromIndex; i >= 0; i++)
+            for (var i = fromIndex; i >= 0; i--)
             {
                 var token = tokens[i];
                 if (token.StartsWith(startsWith))
