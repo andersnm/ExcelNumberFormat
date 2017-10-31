@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 
 namespace ExcelNumberFormat
 {
@@ -58,7 +59,7 @@ namespace ExcelNumberFormat
 
         internal Section GetSection(object value)
         {
-            if (Sections.Count > 0)
+            if (Sections.Any())
                 return Sections[0];
             return null;
             // TODO:
@@ -67,12 +68,9 @@ namespace ExcelNumberFormat
             // if double, int, check condition, order, negative etc, exponential, fraction
         }
 
-        Section GetFirstSection(SectionType type)
+        private Section GetFirstSection(SectionType type)
         {
-            foreach (var section in Sections)
-                if (section.Type == type)
-                    return section;
-            return null;
+            return Sections.FirstOrDefault(s => s.Type == type);
         }
     }
 }
