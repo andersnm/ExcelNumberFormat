@@ -79,10 +79,19 @@ namespace ExcelNumberFormat.Tests
         [TestMethod]
         public void TestDate()
         {
+            Test(new DateTime(2000, 1, 1), "d-mmm-yy", "1-Jan-00");
+            Test(new DateTime(2000, 1, 1, 12, 34, 56), "m/d/yyyy\\ h:mm:ss;@", "1/1/2000 12:34:56");
             Test(new DateTime(2010, 9, 26), "yyyy-MMM-dd", "2010-Sep-26");
             Test(new DateTime(2010, 9, 26), "yyyy-MM-dd", "2010-09-26");
             Test(new DateTime(2010, 9, 26), "mm/dd/yyyy", "09/26/2010");
             Test(new DateTime(2010, 9, 26), "m/d/yy", "9/26/10");
+        }
+
+        [TestMethod]
+        public void TestTimeSpan()
+        {
+            Test(new TimeSpan(100, 0, 0), "[hh]:mm:ss", "100:00:00");
+            Test(new TimeSpan(100, 0, 0), "[mm]:ss", "6000:00");
         }
 
         void Test(object value, string format, string expected)
@@ -833,8 +842,11 @@ namespace ExcelNumberFormat.Tests
             result = Format(Double.MaxValue, string.Empty, CultureInfo.InvariantCulture);
             Assert.AreEqual("1.79769313486232E+308", result);
 
-            result = Format(new DateTime(2017, 10, 28), string.Empty, CultureInfo.InvariantCulture);
+            result = Format(new DateTime(2017, 10, 28), string.Empty, new CultureInfo("sv-se"));
             Assert.AreEqual("2017-10-28 00:00:00", result);
+
+            result = Format(new DateTime(2017, 10, 28), string.Empty, CultureInfo.InvariantCulture);
+            Assert.AreEqual("10/28/2017 00:00:00", result);
         }
     }
 }

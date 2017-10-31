@@ -10,30 +10,32 @@ namespace ExcelNumberFormat
         static public string Format(object value, string formatString, CultureInfo culture)
         {
             var format = new NumberFormat(formatString);
-            return Format(value, format, culture);
+            if (!format.IsValid)
+                return Convert.ToString(value, culture);
+
+            var section = format.GetSection(value);
+            if (section == null)
+                return Convert.ToString(value, culture);
+
+            return Format(value, section, culture);
         }
 
-        static public string Format(object value, NumberFormat format, CultureInfo culture)
+        static public string Format(object value, Section node, CultureInfo culture)
         {
-            if (string.IsNullOrEmpty(format.FormatString))
-                return value.ToString();
-
-            var node = format.GetSection(value);
-
-            if (node == null)
-                return "Invalid format";
-
             switch (node.Type)
             {
                 case SectionType.Number:
                     return FormatNumber(Convert.ToDouble(value, culture), node.Number, culture);
 
                 case SectionType.Date:
-                    return FormatDate(Convert.ToDateTime(value, culture), node.GeneralTextDateParts, culture);
+                    return FormatDate(Convert.ToDateTime(value, culture), node.GeneralTextDateDurationParts, culture);
+
+                case SectionType.Duration:
+                    return FormatTimeSpan((TimeSpan)value, node.GeneralTextDateDurationParts, culture);
 
                 case SectionType.General:
                 case SectionType.Text:
-                    return FormatGeneralText(Convert.ToString(value, culture), node.GeneralTextDateParts);
+                    return FormatGeneralText(Convert.ToString(value, culture), node.GeneralTextDateDurationParts);
 
                 case SectionType.Exponential:
                     return FormatExponential(Convert.ToDouble(value, culture), node, culture);
@@ -42,7 +44,7 @@ namespace ExcelNumberFormat
                     return FormatFraction(Convert.ToDouble(value, culture), node, culture);
 
                 default:
-                    return "Invalid format";
+                    throw new InvalidOperationException("Unknown number format section");
             }
         }
 
@@ -64,7 +66,58 @@ namespace ExcelNumberFormat
             return result.ToString();
         }
 
-        static string FormatDate(DateTime date, List<string> tokens, CultureInfo culture)
+        private static string FormatTimeSpan(TimeSpan timeSpan, List<string> tokens, CultureInfo culture)
+        {
+            // NOTE/TODO: assumes there is exactly one [hh], [mm] or [ss] using the integer part of TimeSpan.TotalXXX when formatting.
+            // The timeSpan input is then truncated to the remainder fraction, which is used to format mm and/or ss.
+            var result = new StringBuilder();
+            for (var i = 0; i < tokens.Count; i++)
+            {
+                var token = tokens[i];
+
+                if (token.StartsWith("m", StringComparison.OrdinalIgnoreCase))
+                {
+                    var value = timeSpan.Minutes;
+                    var digits = token.Length;
+                    result.Append(value.ToString("D" + digits));
+                }
+                else if (token.StartsWith("s", StringComparison.OrdinalIgnoreCase))
+                {
+                    var value = timeSpan.Seconds;
+                    var digits = token.Length;
+                    result.Append(value.ToString("D" + digits));
+                }
+                else if (token.StartsWith("[h", StringComparison.OrdinalIgnoreCase))
+                {
+                    var value = (int)timeSpan.TotalHours;
+                    var digits = token.Length - 2;
+                    result.Append(value.ToString("D" + digits));
+                    timeSpan = TimeSpan.FromHours(timeSpan.TotalHours - value);
+                }
+                else if (token.StartsWith("[m", StringComparison.OrdinalIgnoreCase))
+                {
+                    var value = (int)timeSpan.TotalMinutes;
+                    var digits = token.Length - 2;
+                    result.Append(value.ToString("D" + digits));
+                    timeSpan = TimeSpan.FromMinutes(timeSpan.TotalMinutes - value);
+                }
+                else if (token.StartsWith("[s", StringComparison.OrdinalIgnoreCase))
+                {
+                    var value = (int)timeSpan.TotalSeconds;
+                    var digits = token.Length - 2;
+                    result.Append(value.ToString("D" + digits));
+                    timeSpan = TimeSpan.FromSeconds(timeSpan.TotalSeconds - value);
+                }
+                else
+                {
+                    FormatLiteral(token, result);
+                }
+            }
+
+            return result.ToString();
+        }
+
+        private static string FormatDate(DateTime date, List<string> tokens, CultureInfo culture)
         {
             var result = new StringBuilder();
             for (var i = 0; i < tokens.Count; i++)
@@ -82,7 +135,7 @@ namespace ExcelNumberFormat
 
                     var year = date.Year;
                     if (digits == 2)
-                        year = (year % 100);
+                        year = year % 100;
 
                     result.Append(year.ToString("D" + digits));
                 }
@@ -157,24 +210,6 @@ namespace ExcelNumberFormat
                         result.Append(culture.DateTimeFormat.GetEraName(era));
                     }
                 }
-                else if (token.StartsWith("[h", StringComparison.OrdinalIgnoreCase))
-                {
-                    // TODO: elapsed hours
-                    var digits = token.Length - 2;
-                    result.Append(date.Hour.ToString("D" + digits));
-                }
-                else if (token.StartsWith("[m", StringComparison.OrdinalIgnoreCase))
-                {
-                    // TODO: elapsed minutes
-                    var digits = token.Length - 2;
-                    result.Append(date.Minute.ToString("D" + digits));
-                }
-                else if (token.StartsWith("[s", StringComparison.OrdinalIgnoreCase))
-                {
-                    // TODO: elapsed seconds
-                    var digits = token.Length - 2;
-                    result.Append(date.Second.ToString("D" + digits));
-                }
                 else if (string.Compare(token, "am/pm", true) == 0)
                 {
                     var ampm = date.ToString("tt", CultureInfo.InvariantCulture);
@@ -208,25 +243,29 @@ namespace ExcelNumberFormat
             return result.ToString();
         }
 
-        static bool LookAheadDatePart(List<string> tokens, int fromIndex, string startsWith)
+        private static bool LookAheadDatePart(List<string> tokens, int fromIndex, string startsWith)
         {
             for (var i = fromIndex; i < tokens.Count; i++)
             {
                 var token = tokens[i];
                 if (token.StartsWith(startsWith))
                     return true;
+                if (Token.IsDatePart(token))
+                    return false;
             }
 
             return false;
         }
 
-        static bool LookBackDatePart(List<string> tokens, int fromIndex, string startsWith)
+        private static bool LookBackDatePart(List<string> tokens, int fromIndex, string startsWith)
         {
             for (var i = fromIndex; i >= 0; i--)
             {
                 var token = tokens[i];
                 if (token.StartsWith(startsWith))
                     return true;
+                if (Token.IsDatePart(token))
+                    return false;
             }
 
             return false;
@@ -630,11 +669,19 @@ namespace ExcelNumberFormat
 
         static void FormatLiteral(string token, StringBuilder result)
         {
-            // TODO: two letter literals starting with '*', '_' or '\\'
             string literal = string.Empty;
             if (token == ",")
             {
                 ; // skip commas
+            }
+            else if (token.Length == 2 && (token[0] == '*' || token[0] == '\\'))
+            {
+                // TODO: * = repeat to fill cell
+                literal = token[1].ToString();
+            }
+            else if (token.Length == 2 && token[0] == '_')
+            {
+                literal = " ";
             }
             else if (token.StartsWith("\""))
             {

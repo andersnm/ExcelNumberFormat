@@ -16,6 +16,6 @@ namespace ExcelNumberFormat
 
         public DecimalSection Number { get; set; }
 
-        public List<string> GeneralTextDateParts { get; set; }
+        public List<string> GeneralTextDateDurationParts { get; set; }
     }
 }

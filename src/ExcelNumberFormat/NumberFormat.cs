@@ -53,7 +53,27 @@ namespace ExcelNumberFormat
 
         public string Format(object value, CultureInfo culture)
         {
-            return Formatter.Format(value, this, culture);
+            if (!IsValid || string.IsNullOrEmpty(FormatString))
+                return Convert.ToString(value, culture);
+
+            var section = GetSection(value);
+            if (section == null)
+                return Convert.ToString(value, culture);
+
+            try
+            {
+                return Formatter.Format(value, section, culture);
+            }
+            catch (InvalidCastException)
+            {
+                // TimeSpan cast exception
+                return Convert.ToString(value, culture);
+            }
+            catch (FormatException)
+            {
+                // Convert.ToDouble/ToDateTime exceptions
+                return Convert.ToString(value, culture);
+            }
         }
 
         internal Section GetSection(object value)

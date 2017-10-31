@@ -4,11 +4,12 @@ using System.Globalization;
 
 namespace ExcelNumberFormat
 {
-    static internal class Parser
+    internal static class Parser
     {
         public static Section ParseSection(Tokenizer reader, out bool syntaxError)
         {
             bool hasDateParts = false;
+            bool hasDurationParts = false;
             bool hasGeneralPart = false;
             bool hasTextPart = false;
             Condition condition = null;
@@ -19,11 +20,13 @@ namespace ExcelNumberFormat
             syntaxError = false;
             while ((token = ReadToken(reader, out syntaxError)) != null)
             {
-                if (token == ";") break;
+                if (token == ";")
+                    break;
 
                 if (Token.IsDatePart(token))
                 {
                     hasDateParts |= true;
+                    hasDurationParts |= Token.IsDurationPart(token);
                     tokens.Add(token);
                 }
                 else if (Token.IsGeneral(token))
@@ -45,7 +48,8 @@ namespace ExcelNumberFormat
                         condition = parseCondition;
                     else if (TryParseColor(expression, out var parseColor))
                         color = parseColor;
-                } else
+                }
+                else
                 {
                     tokens.Add(token);
                 }
@@ -70,22 +74,30 @@ namespace ExcelNumberFormat
             FractionSection fraction = null;
             ExponentialSection exponential = null;
             DecimalSection number = null;
-            List<string> generalTextDate = null;
+            List<string> generalTextDateDuration = null;
 
             if (hasDateParts)
             {
-                type = SectionType.Date;
-                ParseDate(tokens, out generalTextDate);
+                if (hasDurationParts)
+                {
+                    type = SectionType.Duration;
+                    generalTextDateDuration = tokens;
+                }
+                else
+                {
+                    type = SectionType.Date;
+                    ParseDate(tokens, out generalTextDateDuration);
+                }
             }
             else if (hasGeneralPart)
             {
                 type = SectionType.General;
-                generalTextDate = tokens;
+                generalTextDateDuration = tokens;
             }
             else if (hasTextPart)
             {
                 type = SectionType.Text;
-                generalTextDate = tokens;
+                generalTextDateDuration = tokens;
             }
             else if (FractionSection.TryParse(tokens, out fraction))
             {
@@ -114,7 +126,7 @@ namespace ExcelNumberFormat
                 Fraction = fraction,
                 Exponential = exponential,
                 Number = number,
-                GeneralTextDateParts = generalTextDate
+                GeneralTextDateDurationParts = generalTextDateDuration
             };
         }
 
@@ -146,7 +158,7 @@ namespace ExcelNumberFormat
                 }
                 else if (token.StartsWith("["))
                 {
-                    ; // ignore
+                    // ignore
                 }
                 else
                 {
@@ -154,7 +166,8 @@ namespace ExcelNumberFormat
                 }
             }
 
-            if (remainder.Count > 0) {
+            if (remainder.Count > 0)
+            {
                 if (beforeDecimal != null)
                 {
                     afterDecimal = remainder;
@@ -164,7 +177,7 @@ namespace ExcelNumberFormat
                     beforeDecimal = remainder;
                 }
             }
-            
+
             return index;
         }
 
@@ -188,14 +201,15 @@ namespace ExcelNumberFormat
                         result.Add("." + new string('0', zeros));
                     else
                         result.Add(".");
-                } else
+                }
+                else
                 {
                     result.Add(token);
                 }
             }
         }
 
-        static private string ReadToken(Tokenizer reader, out bool syntaxError)
+        private static string ReadToken(Tokenizer reader, out bool syntaxError)
         {
             var offset = reader.Position;
             if (
@@ -233,7 +247,7 @@ namespace ExcelNumberFormat
             return null;
         }
 
-        static bool ReadLiteral(Tokenizer reader)
+        private static bool ReadLiteral(Tokenizer reader)
         {
             if (reader.Peek() == '\\' || reader.Peek() == '*' || reader.Peek() == '_')
             {
@@ -248,7 +262,7 @@ namespace ExcelNumberFormat
             return false;
         }
 
-        static bool TryParseCondition(string token, out Condition result)
+        private static bool TryParseCondition(string token, out Condition result)
         {
             var tokenizer = new Tokenizer(token);
 
@@ -279,22 +293,28 @@ namespace ExcelNumberFormat
             return false;
         }
 
-        static bool ReadConditionValue(Tokenizer tokenizer)
+        private static bool ReadConditionValue(Tokenizer tokenizer)
         {
             // NFPartCondNum = [ASCII-HYPHEN-MINUS] NFPartIntNum [INTL-CHAR-DECIMAL-SEP NFPartIntNum] [NFPartExponential NFPartIntNum]
             tokenizer.ReadString("-");
-            while (tokenizer.ReadOneOf("0123456789")) { }
+            while (tokenizer.ReadOneOf("0123456789"))
+            {
+            }
 
             if (tokenizer.ReadString("."))
             {
-                while (tokenizer.ReadOneOf("0123456789")) { }
+                while (tokenizer.ReadOneOf("0123456789"))
+                {
+                }
             }
 
-            if ((tokenizer.ReadString("e+", true) || tokenizer.ReadString("e-", true)))
+            if (tokenizer.ReadString("e+", true) || tokenizer.ReadString("e-", true))
             {
                 if (tokenizer.ReadOneOf("0123456789"))
                 {
-                    while (tokenizer.ReadOneOf("0123456789")) { }
+                    while (tokenizer.ReadOneOf("0123456789"))
+                    {
+                    }
                 }
                 else
                 {
@@ -305,7 +325,7 @@ namespace ExcelNumberFormat
             return true;
         }
 
-        static bool TryParseColor(string token, out Color color)
+        private static bool TryParseColor(string token, out Color color)
         {
             // TODO: Color1..59
             var tokenizer = new Tokenizer(token);
