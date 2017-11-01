@@ -27,7 +27,7 @@ namespace ExcelNumberFormat
 
         public string FormatString { get; }
 
-        internal IReadOnlyList<Section> Sections { get; }
+        internal List<Section> Sections { get; }
 
         public bool IsDateTimeFormat
         {

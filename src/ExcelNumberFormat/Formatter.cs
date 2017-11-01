@@ -215,7 +215,7 @@ namespace ExcelNumberFormat
                         result.Append(culture.DateTimeFormat.GetEraName(era));
                     }
                 }
-                else if (string.Compare(token, "am/pm", true) == 0)
+                else if (string.Compare(token, "am/pm", StringComparison.OrdinalIgnoreCase) == 0)
                 {
                     var ampm = date.ToString("tt", CultureInfo.InvariantCulture);
                     if (char.IsUpper(token[0]))
@@ -227,7 +227,7 @@ namespace ExcelNumberFormat
                         result.Append(ampm.ToLowerInvariant());
                     }
                 }
-                else if (string.Compare(token, "a/p", true) == 0)
+                else if (string.Compare(token, "a/p", StringComparison.OrdinalIgnoreCase) == 0)
                 {
                     var ampm = date.ToString("t", CultureInfo.InvariantCulture);
                     if (char.IsUpper(token[0]))

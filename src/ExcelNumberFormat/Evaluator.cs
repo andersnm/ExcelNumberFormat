@@ -6,7 +6,7 @@ namespace ExcelNumberFormat
 {
     internal static class Evaluator
     {
-        public static Section GetSection(IReadOnlyList<Section> sections, object value)
+        public static Section GetSection(List<Section> sections, object value)
         {
             // Standard format has up to 4 sections:
             // Positive;Negative;Zero;Text
@@ -39,7 +39,7 @@ namespace ExcelNumberFormat
             }
         }
 
-        public static Section GetFirstSection(IReadOnlyList<Section> sections, SectionType type)
+        public static Section GetFirstSection(List<Section> sections, SectionType type)
         {
             foreach (var section in sections)
                 if (section.Type == type)
@@ -47,7 +47,7 @@ namespace ExcelNumberFormat
             return null;
         }
 
-        private static Section GetNumericSection(IReadOnlyList<Section> sections, double value)
+        private static Section GetNumericSection(List<Section> sections, double value)
         {
             // First section applies if 
             // - Has a condition:
