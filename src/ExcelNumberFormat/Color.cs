@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ExcelNumberFormat
+﻿namespace ExcelNumberFormat
 {
-    public class Color
+    internal class Color
     {
         public string Value { get; set; }
     }

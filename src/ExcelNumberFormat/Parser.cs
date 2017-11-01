@@ -6,12 +6,34 @@ namespace ExcelNumberFormat
 {
     internal static class Parser
     {
-        public static Section ParseSection(Tokenizer reader, out bool syntaxError)
+        public static List<Section> ParseSections(string formatString, out bool syntaxError)
+        {
+            var tokenizer = new Tokenizer(formatString);
+            var sections = new List<Section>();
+            syntaxError = false;
+            while (true)
+            {
+                var section = ParseSection(tokenizer, sections.Count, out var sectionSyntaxError);
+
+                if (sectionSyntaxError)
+                    syntaxError = true;
+
+                if (section == null)
+                    break;
+
+                sections.Add(section);
+            }
+
+            return sections;
+        }
+
+        private static Section ParseSection(Tokenizer reader, int index, out bool syntaxError)
         {
             bool hasDateParts = false;
             bool hasDurationParts = false;
             bool hasGeneralPart = false;
             bool hasTextPart = false;
+            bool hasPlaceholders = false;
             Condition condition = null;
             Color color = null;
             string token;
@@ -22,6 +44,8 @@ namespace ExcelNumberFormat
             {
                 if (token == ";")
                     break;
+
+                hasPlaceholders |= Token.IsPlaceholder(token);
 
                 if (Token.IsDatePart(token))
                 {
@@ -94,7 +118,7 @@ namespace ExcelNumberFormat
                 type = SectionType.General;
                 generalTextDateDuration = tokens;
             }
-            else if (hasTextPart)
+            else if (hasTextPart || !hasPlaceholders)
             {
                 type = SectionType.Text;
                 generalTextDateDuration = tokens;
@@ -121,6 +145,7 @@ namespace ExcelNumberFormat
             return new Section()
             {
                 Type = type,
+                SectionIndex = index,
                 Color = color,
                 Condition = condition,
                 Fraction = fraction,

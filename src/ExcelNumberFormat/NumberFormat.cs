@@ -8,26 +8,12 @@ namespace ExcelNumberFormat
     {
         public NumberFormat(string formatString)
         {
-            var tokenizer = new Tokenizer(formatString);
-            var sections = new List<Section>();
-            var isValid = true;
-            while (true)
-            {
-                var section = Parser.ParseSection(tokenizer, out var syntaxError);
+            var sections = Parser.ParseSections(formatString, out bool syntaxError);
 
-                if (syntaxError)
-                    isValid = false;
-
-                if (section == null)
-                    break;
-
-                sections.Add(section);
-            }
-
-            IsValid = isValid;
+            IsValid = !syntaxError;
             FormatString = formatString;
 
-            if (isValid)
+            if (IsValid)
             {
                 Sections = sections;
             }
@@ -47,7 +33,15 @@ namespace ExcelNumberFormat
         {
             get
             {
-                return GetFirstSection(SectionType.Date) != null;
+                return Evaluator.GetFirstSection(Sections, SectionType.Date) != null;
+            }
+        }
+
+        public bool IsTimeSpanFormat
+        {
+            get
+            {
+                return Evaluator.GetFirstSection(Sections, SectionType.Duration) != null;
             }
         }
 
@@ -56,7 +50,7 @@ namespace ExcelNumberFormat
             if (!IsValid || string.IsNullOrEmpty(FormatString))
                 return Convert.ToString(value, culture);
 
-            var section = GetSection(value);
+            var section = Evaluator.GetSection(Sections, value);
             if (section == null)
                 return Convert.ToString(value, culture);
 
@@ -74,25 +68,6 @@ namespace ExcelNumberFormat
                 // Convert.ToDouble/ToDateTime exceptions
                 return Convert.ToString(value, culture);
             }
-        }
-
-        internal Section GetSection(object value)
-        {
-            if (Sections.Count > 0)
-                return Sections[0];
-            return null;
-            // TODO:
-            // if datetime, return first datetime section, else null
-            // if string, return first text section, else null
-            // if double, int, check condition, order, negative etc, exponential, fraction
-        }
-
-        Section GetFirstSection(SectionType type)
-        {
-            foreach (var section in Sections)
-                if (section.Type == type)
-                    return section;
-            return null;
         }
     }
 }

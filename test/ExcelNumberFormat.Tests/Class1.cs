@@ -30,6 +30,49 @@ namespace ExcelNumberFormat.Tests
         }
 
         [TestMethod]
+        public void TestCondition()
+        {
+            Test("Hello", "\"p\"0;\"m\"0;\"z\"0;\"t\"@", "tHello");
+            Test("Hello", "\"num\"0", "Hello");
+
+            Test(-1, "\"p\"0;\"m\"0;\"z\"0;\"t\"@", "m1");
+            Test(0, "\"p\"0;\"m\"0;\"z\"0;\"t\"@", "z0");
+            Test(1, "\"p\"0;\"m\"0;\"z\"0;\"t\"@", "p1");
+
+            Test(-1, "[<0]\"p\"0;\"m\"0;\"z\"0;\"t\"@", "p1");
+            Test(0, "[<0]\"p\"0;\"m\"0;\"z\"0;\"t\"@", "z0");
+            Test(1, "[<0]\"p\"0;\"m\"0;\"z\"0;\"t\"@", "z1");
+
+            Test(-1, "\"p\"0;[>0]\"m\"0;\"z\"0;\"t\"@", "-z1");
+            Test(0, "\"p\"0;[>0]\"m\"0;\"z\"0;\"t\"@", "z0");
+            Test(1, "\"p\"0;[>0]\"m\"0;\"z\"0;\"t\"@", "p1");
+
+            Test(-1, "[<0]\"LT0\";\"ELSE\"", "LT0");
+            Test(0, "[<0]\"LT0\";\"ELSE\"", "ELSE");
+            Test(1, "[<0]\"LT0\";\"ELSE\"", "ELSE");
+
+            Test(-1, "[<=0]\"LTE0\";\"ELSE\"", "LTE0");
+            Test(0, "[<=0]\"LTE0\";\"ELSE\"", "LTE0");
+            Test(1, "[<=0]\"LTE0\";\"ELSE\"", "ELSE");
+
+            Test(-1, "[>0]\"GT0\";\"ELSE\"", "ELSE");
+            Test(0, "[>0]\"GT0\";\"ELSE\"", "ELSE");
+            Test(1, "[>0]\"GT0\";\"ELSE\"", "GT0");
+
+            Test(-1, "[>=0]\"GTE0\";\"ELSE\"", "ELSE");
+            Test(0, "[>=0]\"GTE0\";\"ELSE\"", "GTE0");
+            Test(1, "[>=0]\"GTE0\";\"ELSE\"", "GTE0");
+
+            Test(-1, "[=0]\"EQ0\";\"ELSE\"", "ELSE");
+            Test(0, "[=0]\"EQ0\";\"ELSE\"", "EQ0");
+            Test(1, "[=0]\"EQ0\";\"ELSE\"", "ELSE");
+
+            Test(-1, "[<>0]\"NEQ0\";\"ELSE\"", "NEQ0");
+            Test(0, "[<>0]\"NEQ0\";\"ELSE\"", "ELSE");
+            Test(1, "[<>0]\"NEQ0\";\"ELSE\"", "NEQ0");
+        }
+
+        [TestMethod]
         public void TestFractionAlignmentSuffix()
         {
             Test(0,   "??/??", " 0/1 ");

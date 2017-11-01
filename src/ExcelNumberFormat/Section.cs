@@ -4,6 +4,8 @@ namespace ExcelNumberFormat
 {
     internal class Section
     {
+        public int SectionIndex { get; set; }
+
         public SectionType Type { get; set; }
 
         public Color Color { get; set; }

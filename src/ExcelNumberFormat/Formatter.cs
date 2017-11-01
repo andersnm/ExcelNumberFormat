@@ -13,7 +13,7 @@ namespace ExcelNumberFormat
             if (!format.IsValid)
                 return Convert.ToString(value, culture);
 
-            var section = format.GetSection(value);
+            var section = Evaluator.GetSection(format.Sections, value);
             if (section == null)
                 return Convert.ToString(value, culture);
 
@@ -25,7 +25,12 @@ namespace ExcelNumberFormat
             switch (node.Type)
             {
                 case SectionType.Number:
-                    return FormatNumber(Convert.ToDouble(value, culture), node.Number, culture);
+                    // Hide sign under certain conditions and section index
+                    var number = Convert.ToDouble(value, culture);
+                    if ((node.SectionIndex == 0 && node.Condition != null) || node.SectionIndex == 1)
+                        number = Math.Abs(number);
+
+                    return FormatNumber(number, node.Number, culture);
 
                 case SectionType.Date:
                     return FormatDate(Convert.ToDateTime(value, culture), node.GeneralTextDateDurationParts, culture);
