@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>net20;netstandard1.0</TargetFrameworks>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
 </Project>
