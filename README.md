@@ -1,22 +1,30 @@
 ExcelNumberFormat
 =================
 
-ExcelNumberFormat is an experimental .NET library to parse and render ECMA-376 number format strings used by Excel and other spreadsheet softwares.
+.NET library to parse ECMA-376 number format strings and format values like Excel and other spreadsheet softwares.
 
-The project started as a fun and challenging exercise, like solving a puzzle. It is not yet a complete or usable implementation. 
+[![Build status](https://ci.appveyor.com/api/projects/status/pg23vtba9wjr138f?svg=true)](https://ci.appveyor.com/project/andersnm/excelnumberformat)
+
+## Usage
 
 ```C#
-Console.WriteLine(Formatter.Format(1234.56, "#.##", CultureInfo.InvariantCulture));
+var format = new NumberFormat("#.##");
+Console.WriteLine(format.Format(1234.56, CultureInfo.InvariantCulture));
 ```
 
-Features:
-- Parses and renders most custom formats as expected: decimal, percent, thousands, exponential, fraction, date/time, text
-- Parses most legal format strings
-- Renders output using relevant constants from CultureInfo
-- Dates are formatted using a .NET DateTime value (instead of a numeric value like Excel)
+## Features
 
-TODO:
-- 'General' format is parsed, but not formatted correctly
-- Conditions and colors are parsed, but not used. Other modifiers in square brackets are skipped
-- Multi-section formats are parsed, but only the first section is used for formatting
-- And probably a lot more!
+- Parses and formats most custom number formats as expected: decimal, percent, thousands, exponential, fraction, date/time, duration, text.
+- Supports multiple sections with conditions.
+- Formats values with relevant constants from CultureInfo.
+- Formats dates and durations using DateTime and TimeSpan values instead of numeric values like Excel.
+- Targets net20 and netstandard1.0 for max compatibility.
+
+## TODO/notes
+
+- 'General' is formatted with `.ToString()` instead of Excel conventions.
+- No errors: Invalid format strings and incompatible input values are formatted with `.ToString()`.
+- All modifiers in square brackets except conditions are ignored (f.ex color, currency).
+- Variable width space is returned as regular space.
+- Repeat-to-fill characters are printed once, not repeated.
+- No alignment hinting.
