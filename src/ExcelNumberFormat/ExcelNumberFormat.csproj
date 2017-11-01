@@ -2,7 +2,14 @@
 
   <PropertyGroup>
     <TargetFrameworks>net20;netstandard1.0</TargetFrameworks>
+    <VersionPrefix>1.0.0</VersionPrefix>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Description>.NET library to parse ECMA-376 number format strings and format values like Excel and other spreadsheet softwares.</Description>
+    <Authors>ExcelNumberFormat developers</Authors>
+    <PackageTags>excel,formatting,numfmt,formatcode</PackageTags>
+    <PackageProjectUrl>https://github.com/andersnm/ExcelNumberFormat</PackageProjectUrl>
+    <PackageIconUrl>https://nugetgallery.blob.core.windows.net/icons/ExcelDataReader.2.1.png</PackageIconUrl>
   </PropertyGroup>
 
 </Project>

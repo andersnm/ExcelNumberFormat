@@ -1,0 +1,17 @@
+version: build-{build}
+skip_tags: true
+image: Visual Studio 2017
+configuration: Release
+build_script:
+- ps: |-
+    msbuild /t:Restore
+    msbuild ExcelNumberFormat.sln /verbosity:minimal /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll" /p:Configuration=$Env:CONFIGURATION /p:TreatWarningsAsErrors=true
+test_script:
+- ps: |-
+    # run tests
+    dotnet test test\ExcelNumberFormat.Tests\ExcelNumberFormat.Tests.csproj --no-build --logger "trx;LogFileName=tests.trx" -c $Env:CONFIGURATION
+    # upload results to AppVeyor
+    $wc = New-Object 'System.Net.WebClient'
+    $wc.UploadFile("https://ci.appveyor.com/api/testresults/mstest/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .\test\ExcelNumberFormat.Tests\TestResults\tests.trx))
+artifacts:
+- path: '**\*.nupkg'
