@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>net20;netstandard1.0</TargetFrameworks>
-    <VersionPrefix>1.0.1</VersionPrefix>
+    <VersionPrefix>1.0.2</VersionPrefix>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Description>.NET library to parse ECMA-376 number format strings and format values like Excel and other spreadsheet softwares.</Description>
