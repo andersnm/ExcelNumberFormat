@@ -5,6 +5,16 @@ ExcelNumberFormat
 
 [![Build status](https://ci.appveyor.com/api/projects/status/pg23vtba9wjr138f?svg=true)](https://ci.appveyor.com/project/andersnm/excelnumberformat)
 
+## Install via NuGet
+
+If you want to include ExcelNumberFormat in your project, you can [install it directly from NuGet](https://www.nuget.org/packages/ExcelNumberFormat)
+
+To install ExcelNumberFormat, run the following command in the Package Manager Console
+
+```
+PM> Install-Package ExcelNumberFormat
+```
+
 ## Usage
 
 ```C#
