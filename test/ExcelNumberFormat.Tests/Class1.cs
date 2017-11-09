@@ -128,13 +128,15 @@ namespace ExcelNumberFormat.Tests
             Test(new DateTime(2010, 9, 26), "yyyy-MM-dd", "2010-09-26");
             Test(new DateTime(2010, 9, 26), "mm/dd/yyyy", "09/26/2010");
             Test(new DateTime(2010, 9, 26), "m/d/yy", "9/26/10");
+            Test(new DateTime(2010, 9, 26, 12, 34, 56, 123), "m/d/yy hh:mm:ss.000", "9/26/10 12:34:56.123");
         }
 
         [TestMethod]
         public void TestTimeSpan()
         {
-            Test(new TimeSpan(100, 0, 0), "[hh]:mm:ss", "100:00:00");
-            Test(new TimeSpan(100, 0, 0), "[mm]:ss", "6000:00");
+            Test(TimeSpan.FromHours(100), "[hh]:mm:ss", "100:00:00");
+            Test(TimeSpan.FromHours(100), "[mm]:ss", "6000:00");
+            Test(TimeSpan.FromMilliseconds(100 * 60 * 60 * 1000 + 123), "[mm]:ss.000", "6000:00.123");
         }
 
         void Test(object value, string format, string expected)

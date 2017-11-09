@@ -113,6 +113,11 @@ namespace ExcelNumberFormat
                     result.Append(value.ToString("D" + digits));
                     timeSpan = TimeSpan.FromSeconds(timeSpan.TotalSeconds - value);
                 }
+                else if (token.StartsWith(".0")) {
+                    var value = timeSpan.Milliseconds;
+                    var digits = token.Length - 1;
+                    result.Append("." + value.ToString("D" + digits));
+                }
                 else
                 {
                     FormatLiteral(token, result);
@@ -238,6 +243,12 @@ namespace ExcelNumberFormat
                     {
                         result.Append(ampm.ToLowerInvariant());
                     }
+                }
+                else if (token.StartsWith(".0"))
+                {
+                    var value = date.Millisecond;
+                    var digits = token.Length - 1;
+                    result.Append("." + value.ToString("D" + digits));
                 }
                 else
                 {

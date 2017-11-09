@@ -105,13 +105,13 @@ namespace ExcelNumberFormat
                 if (hasDurationParts)
                 {
                     type = SectionType.Duration;
-                    generalTextDateDuration = tokens;
                 }
                 else
                 {
                     type = SectionType.Date;
-                    ParseDate(tokens, out generalTextDateDuration);
                 }
+
+                ParseMilliseconds(tokens, out generalTextDateDuration);
             }
             else if (hasGeneralPart)
             {
@@ -206,7 +206,7 @@ namespace ExcelNumberFormat
             return index;
         }
 
-        private static void ParseDate(List<string> tokens, out List<string> result)
+        private static void ParseMilliseconds(List<string> tokens, out List<string> result)
         {
             // if tokens form .0 through .000.., combine to single subsecond token
             result = new List<string>();
