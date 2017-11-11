@@ -30,6 +30,22 @@ Console.WriteLine(format.Format(1234.56, CultureInfo.InvariantCulture));
 - Formats dates and durations using DateTime and TimeSpan values instead of numeric values like Excel.
 - Targets net20 and netstandard1.0 for max compatibility.
 
+## Formatting .NET types
+
+The `Format()` method takes a value of type `object` as parameter. Internally, the value is cast or converted to a specific .NET type depending on the kind of number format:
+
+Format Kind | Example | .NET type|Conversion strategy
+-|-|-|-
+Number   | 0.00      |double|Convert.ToDouble()
+Fraction | 0/0       |double|Convert.ToDouble()
+Exponent | \#0.0E+0  |double|Convert.ToDouble()
+Date/Time| hh\:mm    |DateTime|Convert.ToDateTime()
+Duration | \[hh\]\:mm|TimeSpan|Cast to TimeSpan
+General  | General   |(any)|Convert.ToString()
+Text     | ;;;"Text: "@|string|Convert.ToString()
+
+In case of errors, `Format()` returns the value from `Convert.ToString()`.
+
 ## TODO/notes
 
 - 'General' is formatted with `.ToString()` instead of Excel conventions.
