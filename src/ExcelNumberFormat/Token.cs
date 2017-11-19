@@ -56,6 +56,11 @@ namespace ExcelNumberFormat
             return token == "0" || token == "#" || token == "?";
         }
 
+        public static bool IsSignificantPlaceholder(string token)
+        {
+            return token == "0";
+        }
+
         public static bool IsGeneral(string token)
         {
             return string.Compare(token, "general", StringComparison.OrdinalIgnoreCase) == 0;
