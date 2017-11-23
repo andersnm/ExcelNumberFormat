@@ -371,7 +371,7 @@ namespace ExcelNumberFormat
 
                     FormatPlaceholder(token, c, significant, result);
 
-                    if (thousandSeparator && (significant || Token.IsSignificantPlaceholder(token)))
+                    if (thousandSeparator && (significant || token.Equals("0")))
                         FormatThousandSeparator(valueString, digitIndex, culture, result);
 
                     digitIndex++;
