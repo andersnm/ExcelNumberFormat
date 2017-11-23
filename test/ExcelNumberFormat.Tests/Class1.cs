@@ -423,6 +423,13 @@ namespace ExcelNumberFormat.Tests
 
         }
 
+        [TestMethod]
+        public void TestThousandSeparator()
+        {
+            var actual = Format(1469.07, "0,000,000.00", CultureInfo.InvariantCulture);
+            Assert.AreEqual("0,001,469.07", actual);
+        }
+
         void TestValid(string format)
         {
             var to = new NumberFormat(format);
