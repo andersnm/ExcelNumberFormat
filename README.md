@@ -24,7 +24,7 @@ Console.WriteLine(format.Format(1234.56, CultureInfo.InvariantCulture));
 
 ## Features
 
-- Parses and formats most custom number formats as expected: decimal, percent, thousands, exponential, fraction, date/time, duration, text.
+- Parses and formats most custom number formats as expected: decimal, percent, thousands, exponential, fraction, currency, date/time, duration, text.
 - Supports multiple sections with conditions.
 - Formats values with relevant constants from CultureInfo.
 - Formats dates and durations using DateTime and TimeSpan values instead of numeric values like Excel.
@@ -50,7 +50,8 @@ In case of errors, `Format()` returns the value from `Convert.ToString()`.
 
 - 'General' is formatted with `.ToString()` instead of Excel conventions.
 - No errors: Invalid format strings and incompatible input values are formatted with `.ToString()`.
-- All modifiers in square brackets except conditions are ignored (f.ex color, currency).
+- No color information.
 - Variable width space is returned as regular space.
 - Repeat-to-fill characters are printed once, not repeated.
 - No alignment hinting.
+- No date conditions.
