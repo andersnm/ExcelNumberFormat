@@ -900,5 +900,12 @@ namespace ExcelNumberFormat.Tests
             result = Format(new DateTime(2017, 10, 28), string.Empty, CultureInfo.InvariantCulture);
             Assert.AreEqual("10/28/2017 00:00:00", result);
         }
+
+        [TestMethod]
+        public void TestCurrency()
+        {
+            Test(1234.56, "[$€-1809]# ##0.00", "€1 234.56");
+            Test(1234.56, "#,##0.00 [$EUR]", "1,234.56 EUR");
+        }
     }
 }
