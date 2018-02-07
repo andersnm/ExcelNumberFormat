@@ -72,6 +72,8 @@ namespace ExcelNumberFormat
                         condition = parseCondition;
                     else if (TryParseColor(expression, out var parseColor))
                         color = parseColor;
+                    else if (TryParseCurrencySymbol(expression, out var parseCurrencySymbol))
+                        tokens.Add("\"" + parseCurrencySymbol + "\"");
                 }
                 else
                 {
@@ -373,6 +375,24 @@ namespace ExcelNumberFormat
 
             color = null;
             return false;
+        }
+
+        private static bool TryParseCurrencySymbol(string token, out string currencySymbol)
+        {
+            if (string.IsNullOrEmpty(token)
+                || !token.StartsWith("$"))
+            {
+                currencySymbol = null;
+                return false;
+            }
+
+
+            if (token.Contains("-"))
+                currencySymbol = token.Substring(1, token.IndexOf('-') - 1);
+            else
+                currencySymbol = token.Substring(1);
+
+            return true;
         }
     }
 }
