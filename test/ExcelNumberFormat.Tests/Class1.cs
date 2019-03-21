@@ -430,6 +430,13 @@ namespace ExcelNumberFormat.Tests
             Assert.AreEqual("0,001,469.07", actual);
         }
 
+        [TestMethod]
+        public void TestThousandSeparatorCulture()
+        {
+            var actual = Format(1469.07, "0,000,000.00", new CultureInfo("da-DK"));
+            Assert.AreEqual("0.001.469,07", actual);
+        }
+
         void TestValid(string format)
         {
             var to = new NumberFormat(format);

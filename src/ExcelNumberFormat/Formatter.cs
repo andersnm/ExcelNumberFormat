@@ -388,7 +388,7 @@ namespace ExcelNumberFormat
             var positionInTens = valueString.Length - 1 - digit;
             if (positionInTens > 0 && (positionInTens % 3) == 0)
             {
-                result.Append(",");
+                result.Append(culture.NumberFormat.NumberGroupSeparator);
             }
         }
 
