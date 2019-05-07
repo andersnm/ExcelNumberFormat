@@ -437,6 +437,17 @@ namespace ExcelNumberFormat.Tests
             Assert.AreEqual("0.001.469,07", actual);
         }
 
+        [TestMethod]
+        [TestCase("da-DK", "17-08-1978")]
+        [TestCase("en-US", "17/08/1978")]
+        [TestCase("bg-BG", "17.08.1978")]
+        [TestCase("nb-NO", "17.08.1978")]
+        public void TestDateSeparatorCulture(string cultureName, string expected)
+        {
+            var actual = Format(new DateTime(1978, 8, 17), "DD/MM/YYYY", new CultureInfo(cultureName));
+            Assert.AreEqual(expected, actual);
+        }
+
         void TestValid(string format)
         {
             var to = new NumberFormat(format);

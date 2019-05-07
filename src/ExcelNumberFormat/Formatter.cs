@@ -250,6 +250,14 @@ namespace ExcelNumberFormat
                     var digits = token.Length - 1;
                     result.Append("." + value.ToString("D" + digits));
                 }
+                else if (token == "/")
+                {
+#if NETSTANDARD1_0
+                    result.Append(DateTime.MaxValue.ToString("/d", culture)[0]);
+#else
+                    result.Append(culture.DateTimeFormat.DateSeparator);
+#endif
+                }
                 else
                 {
                     FormatLiteral(token, result);
