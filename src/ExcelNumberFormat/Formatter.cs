@@ -272,7 +272,7 @@ namespace ExcelNumberFormat
             for (var i = fromIndex; i < tokens.Count; i++)
             {
                 var token = tokens[i];
-                if (token.StartsWith(startsWith))
+                if (token.StartsWith(startsWith, StringComparison.OrdinalIgnoreCase))
                     return true;
                 if (Token.IsDatePart(token))
                     return false;
@@ -286,7 +286,7 @@ namespace ExcelNumberFormat
             for (var i = fromIndex; i >= 0; i--)
             {
                 var token = tokens[i];
-                if (token.StartsWith(startsWith))
+                if (token.StartsWith(startsWith, StringComparison.OrdinalIgnoreCase))
                     return true;
                 if (Token.IsDatePart(token))
                     return false;
