@@ -129,6 +129,7 @@ namespace ExcelNumberFormat.Tests
             Test(new DateTime(2010, 9, 26), "mm/dd/yyyy", "09/26/2010");
             Test(new DateTime(2010, 9, 26), "m/d/yy", "9/26/10");
             Test(new DateTime(2010, 9, 26, 12, 34, 56, 123), "m/d/yy hh:mm:ss.000", "9/26/10 12:34:56.123");
+            Test(new DateTime(2010, 9, 26, 12, 34, 56, 123), "YYYY-MM-DD HH:MM:SS", "2010-09-26 12:34:56");
         }
 
         [TestMethod]
