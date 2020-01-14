@@ -129,6 +129,7 @@ namespace ExcelNumberFormat
 
         private static string FormatDate(DateTime date, List<string> tokens, CultureInfo culture)
         {
+            var containsAmPm = tokens.Contains("AM/PM") || tokens.Contains("A/P");
             var result = new StringBuilder();
             for (var i = 0; i < tokens.Count; i++)
             {
@@ -200,7 +201,10 @@ namespace ExcelNumberFormat
                 else if (token.StartsWith("h", StringComparison.OrdinalIgnoreCase))
                 {
                     var digits = token.Length;
-                    result.Append(date.Hour.ToString("D" + digits));
+                    if(containsAmPm)
+                        result.Append(date.ToString("%h"));
+                    else
+                        result.Append(date.Hour.ToString("D" + digits));
                 }
                 else if (token.StartsWith("s", StringComparison.OrdinalIgnoreCase))
                 {
@@ -234,7 +238,7 @@ namespace ExcelNumberFormat
                 }
                 else if (string.Compare(token, "a/p", StringComparison.OrdinalIgnoreCase) == 0)
                 {
-                    var ampm = date.ToString("t", CultureInfo.InvariantCulture);
+                    var ampm = date.ToString("%t", CultureInfo.InvariantCulture);
                     if (char.IsUpper(token[0]))
                     {
                         result.Append(ampm.ToUpperInvariant());
