@@ -129,7 +129,8 @@ namespace ExcelNumberFormat
 
         private static string FormatDate(DateTime date, List<string> tokens, CultureInfo culture)
         {
-            var containsAmPm = tokens.Contains("AM/PM") || tokens.Contains("A/P");
+            var containsAmPm = ContainsAmPm(tokens);
+
             var result = new StringBuilder();
             for (var i = 0; i < tokens.Count; i++)
             {
@@ -202,7 +203,7 @@ namespace ExcelNumberFormat
                 {
                     var digits = token.Length;
                     if(containsAmPm)
-                        result.Append(date.ToString("%h"));
+                        result.Append((date.Hour % 12).ToString("D" + digits));
                     else
                         result.Append(date.Hour.ToString("D" + digits));
                 }
@@ -227,14 +228,7 @@ namespace ExcelNumberFormat
                 else if (string.Compare(token, "am/pm", StringComparison.OrdinalIgnoreCase) == 0)
                 {
                     var ampm = date.ToString("tt", CultureInfo.InvariantCulture);
-                    if (char.IsUpper(token[0]))
-                    {
-                        result.Append(ampm.ToUpperInvariant());
-                    }
-                    else
-                    {
-                        result.Append(ampm.ToLowerInvariant());
-                    }
+                    result.Append(ampm.ToUpperInvariant());
                 }
                 else if (string.Compare(token, "a/p", StringComparison.OrdinalIgnoreCase) == 0)
                 {
@@ -294,6 +288,24 @@ namespace ExcelNumberFormat
                     return true;
                 if (Token.IsDatePart(token))
                     return false;
+            }
+
+            return false;
+        }
+
+        private static bool ContainsAmPm(List<string> tokens)
+        {
+            foreach (var token in tokens)
+            {
+                if (string.Compare(token, "am/pm", StringComparison.OrdinalIgnoreCase) == 0)
+                {
+                    return true;
+                }
+
+                if (string.Compare(token, "a/p", StringComparison.OrdinalIgnoreCase) == 0)
+                {
+                    return true;
+                }
             }
 
             return false;

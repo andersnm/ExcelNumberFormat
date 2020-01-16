@@ -131,8 +131,14 @@ namespace ExcelNumberFormat.Tests
             Test(new DateTime(2010, 9, 26, 12, 34, 56, 123), "m/d/yy hh:mm:ss.000", "9/26/10 12:34:56.123");
             Test(new DateTime(2010, 9, 26, 12, 34, 56, 123), "YYYY-MM-DD HH:MM:SS", "2010-09-26 12:34:56");
             Test(new DateTime(2020, 1, 1, 14, 35, 55), "m/d/yyyy\\ h:mm:ss AM/PM;@", "1/1/2020 2:35:55 PM");
+            Test(new DateTime(2020, 1, 1, 14, 35, 55), "m/d/yyyy\\ h:mm:ss aM/Pm;@", "1/1/2020 2:35:55 PM");
+            Test(new DateTime(2020, 1, 1, 14, 35, 55), "m/d/yyyy\\ h:mm:ss am/PM;@", "1/1/2020 2:35:55 PM");
             Test(new DateTime(2020, 1, 1, 14, 35, 55), "m/d/yyyy\\ h:mm:ss A/P;@", "1/1/2020 2:35:55 P");
+            Test(new DateTime(2020, 1, 1, 14, 35, 55), "m/d/yyyy\\ h:mm:ss a/P;@", "1/1/2020 2:35:55 p");
+            Test(new DateTime(2020, 1, 1, 14, 35, 55), "m/d/yyyy\\ h:mm:ss A/p;@", "1/1/2020 2:35:55 P");
             Test(new DateTime(2020, 1, 1, 14, 35, 55), "m/d/yyyy\\ h:mm:ss;@", "1/1/2020 14:35:55");
+            Test(new DateTime(2020, 1, 1, 14, 35, 55), "m/d/yyyy\\ hh:mm:ss AM/PM;@", "1/1/2020 02:35:55 PM");
+            Test(new DateTime(2020, 1, 1, 16, 5, 6), "m/d/yyyy\\ h:m:s AM/PM;@", "1/1/2020 4:5:6 PM");
         }
 
         [TestMethod]
