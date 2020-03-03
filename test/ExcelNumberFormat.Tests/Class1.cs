@@ -922,6 +922,9 @@ namespace ExcelNumberFormat.Tests
             result = Format(Double.MaxValue, string.Empty, CultureInfo.InvariantCulture);
             Assert.AreEqual("1.79769313486232E+308", result);
 
+            result = Format(float.MaxValue, string.Empty, CultureInfo.InvariantCulture);
+            Assert.AreEqual("3.402823E+38", result);
+
             result = Format(new DateTime(2017, 10, 28), string.Empty, new CultureInfo("sv-se"));
             Assert.AreEqual("2017-10-28 00:00:00", result);
 
