@@ -63,7 +63,17 @@ namespace ExcelNumberFormat
         public string Format(object value, CultureInfo culture)
         {
             if (!IsValid || string.IsNullOrEmpty(FormatString))
-                return Convert.ToString(value, culture);
+            {
+                switch (value)
+                {
+                    case double d:
+                        return d.ToString("G15", culture);
+                    case Single s:
+                        return s.ToString("G7", culture);
+                    default:
+                        return Convert.ToString(value, culture);
+                }
+            }
 
             var section = Evaluator.GetSection(Sections, value);
             if (section == null)
