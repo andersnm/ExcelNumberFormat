@@ -11,11 +11,11 @@ namespace ExcelNumberFormat
         {
             var format = new NumberFormat(formatString);
             if (!format.IsValid)
-                return Convert.ToString(value, culture);
+                return CompatibleConvert.ToString(value, culture);
 
             var section = Evaluator.GetSection(format.Sections, value);
             if (section == null)
-                return Convert.ToString(value, culture);
+                return CompatibleConvert.ToString(value, culture);
 
             return Format(value, section, culture);
         }
@@ -40,7 +40,7 @@ namespace ExcelNumberFormat
 
                 case SectionType.General:
                 case SectionType.Text:
-                    return FormatGeneralText(Convert.ToString(value, culture), node.GeneralTextDateDurationParts);
+                    return FormatGeneralText(CompatibleConvert.ToString(value, culture), node.GeneralTextDateDurationParts);
 
                 case SectionType.Exponential:
                     return FormatExponential(Convert.ToDouble(value, culture), node, culture);
