@@ -63,21 +63,11 @@ namespace ExcelNumberFormat
         public string Format(object value, CultureInfo culture)
         {
             if (!IsValid || string.IsNullOrEmpty(FormatString))
-            {
-                switch (value)
-                {
-                    case double d:
-                        return d.ToString("G15", culture);
-                    case Single s:
-                        return s.ToString("G7", culture);
-                    default:
-                        return Convert.ToString(value, culture);
-                }
-            }
+                CompatibleConvert.ToString(value, culture);
 
             var section = Evaluator.GetSection(Sections, value);
             if (section == null)
-                return Convert.ToString(value, culture);
+                return CompatibleConvert.ToString(value, culture);
 
             try
             {
@@ -86,12 +76,12 @@ namespace ExcelNumberFormat
             catch (InvalidCastException)
             {
                 // TimeSpan cast exception
-                return Convert.ToString(value, culture);
+                return CompatibleConvert.ToString(value, culture);
             }
             catch (FormatException)
             {
                 // Convert.ToDouble/ToDateTime exceptions
-                return Convert.ToString(value, culture);
+                return CompatibleConvert.ToString(value, culture);
             }
         }
     }

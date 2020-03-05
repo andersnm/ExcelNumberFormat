@@ -911,24 +911,26 @@ namespace ExcelNumberFormat.Tests
             TestValid("yyyy\\-mm\\-dd\\Thhmmss.000");
         }
 
-        [TestMethod]
-        public void TestEmptyFormatString()
+        [TestCase(null)]
+        [TestCase("")]
+        [TestCase("General")]
+        public void TestDefaultFormatString(string formatString)
         {
             string result;
 
-            result = Format(1234.56, string.Empty, CultureInfo.InvariantCulture);
+            result = Format(1234.56, formatString, CultureInfo.InvariantCulture);
             Assert.AreEqual("1234.56", result);
 
-            result = Format(Double.MaxValue, string.Empty, CultureInfo.InvariantCulture);
+            result = Format(Double.MaxValue, formatString, CultureInfo.InvariantCulture);
             Assert.AreEqual("1.79769313486232E+308", result);
 
-            result = Format(float.MaxValue, string.Empty, CultureInfo.InvariantCulture);
+            result = Format(float.MaxValue, formatString, CultureInfo.InvariantCulture);
             Assert.AreEqual("3.402823E+38", result);
 
-            result = Format(new DateTime(2017, 10, 28), string.Empty, new CultureInfo("sv-se"));
+            result = Format(new DateTime(2017, 10, 28), formatString, new CultureInfo("sv-se"));
             Assert.AreEqual("2017-10-28 00:00:00", result);
 
-            result = Format(new DateTime(2017, 10, 28), string.Empty, CultureInfo.InvariantCulture);
+            result = Format(new DateTime(2017, 10, 28), formatString, CultureInfo.InvariantCulture);
             Assert.AreEqual("10/28/2017 00:00:00", result);
         }
 

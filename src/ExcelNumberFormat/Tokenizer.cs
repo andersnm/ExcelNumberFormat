@@ -14,7 +14,7 @@ namespace ExcelNumberFormat
 
         public int Position => formatStringPosition;
 
-        public int Length => formatString.Length;
+        public int Length => formatString?.Length ?? 0;
 
         public string Substring(int startIndex, int length)
         {
@@ -23,7 +23,7 @@ namespace ExcelNumberFormat
 
         public int Peek(int offset = 0)
         {
-            if (formatStringPosition + offset >= formatString.Length)
+            if (formatStringPosition + offset >= Length)
                 return -1;
             return formatString[formatStringPosition + offset];
         }
@@ -82,7 +82,7 @@ namespace ExcelNumberFormat
 
         public bool ReadString(string s, bool ignoreCase = false)
         {
-            if (formatStringPosition + s.Length > formatString.Length)
+            if (formatStringPosition + s.Length > Length)
                 return false;
 
             for (var i = 0; i < s.Length; i++)
