@@ -62,9 +62,6 @@ namespace ExcelNumberFormat
         /// <returns>The formatted string.</returns>
         public string Format(object value, CultureInfo culture)
         {
-            if (!IsValid || string.IsNullOrEmpty(FormatString))
-                CompatibleConvert.ToString(value, culture);
-
             var section = Evaluator.GetSection(Sections, value);
             if (section == null)
                 return CompatibleConvert.ToString(value, culture);

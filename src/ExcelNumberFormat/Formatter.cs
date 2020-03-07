@@ -202,7 +202,7 @@ namespace ExcelNumberFormat
                 else if (token.StartsWith("h", StringComparison.OrdinalIgnoreCase))
                 {
                     var digits = token.Length;
-                    if(containsAmPm)
+                    if (containsAmPm)
                         result.Append((date.Hour % 12).ToString("D" + digits));
                     else
                         result.Append(date.Hour.ToString("D" + digits));
@@ -255,6 +255,15 @@ namespace ExcelNumberFormat
 #else
                     result.Append(culture.DateTimeFormat.DateSeparator);
 #endif
+                }
+                else if (token == ",")
+                {
+                    while (i < tokens.Count - 1 && tokens[i + 1] == ",")
+                    {
+                        i++;
+                    }
+
+                    result.Append(",");
                 }
                 else
                 {
