@@ -149,6 +149,10 @@ namespace ExcelNumberFormat.Tests
             Test(TimeSpan.FromHours(100), "[hh]:mm:ss", "100:00:00");
             Test(TimeSpan.FromHours(100), "[mm]:ss", "6000:00");
             Test(TimeSpan.FromMilliseconds(100 * 60 * 60 * 1000 + 123), "[mm]:ss.000", "6000:00.123");
+
+            Test(new TimeSpan(1, 2, 31, 45), "[hh]:mm:ss", "26:31:45");
+            Test(new TimeSpan(1, 2, 31, 44, 500), "[hh]:mm:ss", "26:31:45");
+            Test(new TimeSpan(1, 2, 31, 44, 500), "[hh]:mm:ss.000", "26:31:44.500");
         }
 
         void Test(object value, string format, string expected)

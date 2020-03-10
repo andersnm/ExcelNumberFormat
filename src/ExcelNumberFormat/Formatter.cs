@@ -76,6 +76,16 @@ namespace ExcelNumberFormat
             // NOTE/TODO: assumes there is exactly one [hh], [mm] or [ss] using the integer part of TimeSpan.TotalXXX when formatting.
             // The timeSpan input is then truncated to the remainder fraction, which is used to format mm and/or ss.
             var result = new StringBuilder();
+            var containsMilliseconds = false;
+            for (var i = tokens.Count-1; i >= 0; i--)
+            {
+                if (tokens[i].StartsWith(".0"))
+                {
+                    containsMilliseconds = true;
+                    break;
+                }
+            }
+
             for (var i = 0; i < tokens.Count; i++)
             {
                 var token = tokens[i];
@@ -89,6 +99,15 @@ namespace ExcelNumberFormat
                 else if (token.StartsWith("s", StringComparison.OrdinalIgnoreCase))
                 {
                     var value = timeSpan.Seconds;
+                    if (!containsMilliseconds)
+                    {
+                        var roundedMilliseconds = GetRoundedMilliseconds(timeSpan);
+                        
+                        if (roundedMilliseconds >= 500)
+                        {
+                            value += 1;
+                        }
+                    }
                     var digits = token.Length;
                     result.Append(value.ToString("D" + digits));
                 }
@@ -114,7 +133,7 @@ namespace ExcelNumberFormat
                     timeSpan = TimeSpan.FromSeconds(timeSpan.TotalSeconds - value);
                 }
                 else if (token.StartsWith(".0")) {
-                    var value = timeSpan.Milliseconds;
+                    var value = GetRoundedMilliseconds(timeSpan);
                     var digits = token.Length - 1;
                     result.Append("." + value.ToString("D" + digits));
                 }
@@ -125,6 +144,17 @@ namespace ExcelNumberFormat
             }
 
             return result.ToString();
+        }
+
+        /// <summary>
+        /// In .Net Core 3.0, TimeSpan is stored with microseconds. As a result, 31:44.500 may be presented as 31:44.499999,
+        /// and TimeSpan.Microseconds will return 499 instead of 500. This method returns a number of microseconds rounded
+        /// to a whole.
+        /// </summary>
+        private static int GetRoundedMilliseconds(TimeSpan timeSpan)
+        {
+            var milliseconds = timeSpan.TotalMilliseconds - (int)timeSpan.TotalSeconds * 1000;
+            return (int)Math.Round(milliseconds);
         }
 
         private static string FormatDate(DateTime date, List<string> tokens, CultureInfo culture)
