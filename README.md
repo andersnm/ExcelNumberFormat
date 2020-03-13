@@ -41,10 +41,12 @@ Fraction | 0/0       |double|Convert.ToDouble()
 Exponent | \#0.0E+0  |double|Convert.ToDouble()
 Date/Time| hh\:mm    |DateTime|Convert.ToDateTime()
 Duration | \[hh\]\:mm|TimeSpan|Cast to TimeSpan
-General  | General   |(any)|Convert.ToString()
+General  | General   |(any)|CompatibleConvert.ToString()
 Text     | ;;;"Text: "@|string|Convert.ToString()
 
-In case of errors, `Format()` returns the value from `Convert.ToString()`.
+In case of errors, `Format()` returns the value from `CompatibleConvert.ToString()`.
+
+`CompatibleConvert.ToString()` formats floats and doubles with explicit precision, or falls back to `Convert.ToString()` for any other types.
 
 ## TODO/notes
 
