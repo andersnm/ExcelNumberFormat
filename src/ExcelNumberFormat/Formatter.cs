@@ -215,7 +215,7 @@ namespace ExcelNumberFormat
                 {
                     var digits = token.Length;
                     if (containsAmPm)
-                        result.Append((date.Hour % 12).ToString("D" + digits));
+                        result.Append(((date.Hour + 11) % 12 + 1).ToString("D" + digits));
                     else
                         result.Append(date.Hour.ToString("D" + digits));
                 }
