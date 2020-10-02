@@ -141,6 +141,8 @@ namespace ExcelNumberFormat.Tests
             Test(new DateTime(2020, 1, 1, 16, 5, 6), "m/d/yyyy\\ h:m:s AM/PM;@", "1/1/2020 4:5:6 PM");
             Test(new DateTime(2017, 10, 16, 0, 0, 0), "dddd, MMMM d, yyyy", "Monday, October 16, 2017");
             Test(new DateTime(2017, 10, 16, 0, 0, 0), "dddd,,, MMMM d,, yyyy,,,,", "Monday, October 16, 2017,");
+            Test(new DateTime(2020, 1, 1, 0, 35, 55), "m/d/yyyy\\ hh:mm:ss AM/PM;@", "1/1/2020 12:35:55 AM");
+            Test(new DateTime(2020, 1, 1, 12, 35, 55), "m/d/yyyy\\ hh:mm:ss AM/PM;@", "1/1/2020 12:35:55 PM");
         }
 
         [TestMethod]
