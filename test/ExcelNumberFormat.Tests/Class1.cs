@@ -148,13 +148,14 @@ namespace ExcelNumberFormat.Tests
         [TestMethod]
         public void TestNumericDate1900()
         {
-            // Test("0", "dd/mm/yyyy", "00/01/1900"); // not work: strings are always formatted as text using the third section
+            Test("0", "dd/mm/yyyy", "0");
             Test(0, "dd/mm/yyyy", "00/01/1900");
             Test(0d, "dd/mm/yyyy", "00/01/1900");
             Test((short)0, "dd/mm/yyyy", "00/01/1900");
             Test(1, "dd/mm/yyyy", "01/01/1900");
             Test(60, "dd/mm/yyyy", "29/02/1900");
             Test(61, "dd/mm/yyyy", "01/03/1900");
+            Test(43648, "[$-409]d\\-mmm\\-yyyy;@", "2-Jul-2019");
         }
 
         [TestMethod]
