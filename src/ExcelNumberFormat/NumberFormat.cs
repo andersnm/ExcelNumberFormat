@@ -59,8 +59,9 @@ namespace ExcelNumberFormat
         /// </summary>
         /// <param name="value">The value to format.</param>
         /// <param name="culture">The culture to use for formatting.</param>
+        /// <param name="isDate1904">If false, numeric dates start on January 0 1900 and include February 29 1900 - like Excel on PC. If true, numeric dates start on January 1 1904 - like Excel on Mac.</param>
         /// <returns>The formatted string.</returns>
-        public string Format(object value, CultureInfo culture)
+        public string Format(object value, CultureInfo culture, bool isDate1904 = false)
         {
             var section = Evaluator.GetSection(Sections, value);
             if (section == null)
@@ -68,7 +69,7 @@ namespace ExcelNumberFormat
 
             try
             {
-                return Formatter.Format(value, section, culture);
+                return Formatter.Format(value, section, culture, isDate1904);
             }
             catch (InvalidCastException)
             {

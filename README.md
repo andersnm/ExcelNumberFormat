@@ -27,7 +27,8 @@ Console.WriteLine(format.Format(1234.56, CultureInfo.InvariantCulture));
 - Parses and formats most custom number formats as expected: decimal, percent, thousands, exponential, fraction, currency, date/time, duration, text.
 - Supports multiple sections with conditions.
 - Formats values with relevant constants from CultureInfo.
-- Formats dates and durations using DateTime and TimeSpan values instead of numeric values like Excel.
+- Supports DateTime, TimeSpan and numeric values for date and duration formats.
+- Supports both 1900- and 1904-based numeric datetimes (Excel on Mac uses 1904-based dates).
 - Targets net20 and netstandard1.0 for max compatibility.
 
 ## Formatting .NET types
@@ -39,14 +40,15 @@ Format Kind | Example | .NET type|Conversion strategy
 Number   | 0.00      |double|Convert.ToDouble()
 Fraction | 0/0       |double|Convert.ToDouble()
 Exponent | \#0.0E+0  |double|Convert.ToDouble()
-Date/Time| hh\:mm    |DateTime|Convert.ToDateTime()
-Duration | \[hh\]\:mm|TimeSpan|Cast to TimeSpan
+Date/Time| hh\:mm    |DateTime|ExcelDateTime.TryConvert()
+Duration | \[hh\]\:mm|TimeSpan|Cast or TimeSpan.FromDays()
 General  | General   |(any)|CompatibleConvert.ToString()
 Text     | ;;;"Text: "@|string|Convert.ToString()
 
 In case of errors, `Format()` returns the value from `CompatibleConvert.ToString()`.
 
 `CompatibleConvert.ToString()` formats floats and doubles with explicit precision, or falls back to `Convert.ToString()` for any other types.
+`ExcelDateTime.TryConvert()` uses DateTimes as is, or converts numeric values to a DateTime with adjustments for legacy Excel behaviors.
 
 ## TODO/notes
 

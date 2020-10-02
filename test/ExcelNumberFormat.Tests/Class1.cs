@@ -14,11 +14,11 @@ namespace ExcelNumberFormat.Tests
     public class Class1
     {
 
-        string Format(object value, string formatString, CultureInfo culture)
+        string Format(object value, string formatString, CultureInfo culture, bool isDate1904 = false)
         {
             var format = new NumberFormat(formatString);
             if (format.IsValid)
-                return format.Format(value, culture);
+                return format.Format(value, culture, isDate1904);
 
             return null;
         }
@@ -146,6 +146,37 @@ namespace ExcelNumberFormat.Tests
         }
 
         [TestMethod]
+        public void TestNumericDate1900()
+        {
+            // Test("0", "dd/mm/yyyy", "00/01/1900"); // not work: strings are always formatted as text using the third section
+            Test(0, "dd/mm/yyyy", "00/01/1900");
+            Test(0d, "dd/mm/yyyy", "00/01/1900");
+            Test((short)0, "dd/mm/yyyy", "00/01/1900");
+            Test(1, "dd/mm/yyyy", "01/01/1900");
+            Test(60, "dd/mm/yyyy", "29/02/1900");
+            Test(61, "dd/mm/yyyy", "01/03/1900");
+        }
+
+        [TestMethod]
+        public void TestNumericDate1904()
+        {
+            Test(0, "dd/mm/yyyy", "01/01/1904", true);
+            Test(0d, "dd/mm/yyyy", "01/01/1904", true);
+            Test((short)0, "dd/mm/yyyy", "01/01/1904", true);
+            Test(1, "dd/mm/yyyy", "02/01/1904", true);
+            Test(60, "dd/mm/yyyy", "01/03/1904", true);
+            Test(61, "dd/mm/yyyy", "02/03/1904", true);
+        }
+
+        [TestMethod]
+        public void TestNumericDuration()
+        {
+            Test(0, "[hh]:mm", "00:00");
+            Test(1, "[hh]:mm", "24:00");
+            Test(1.5, "[hh]:mm", "36:00");
+        }
+
+        [TestMethod]
         public void TestTimeSpan()
         {
             Test(TimeSpan.FromHours(100), "[hh]:mm:ss", "100:00:00");
@@ -162,9 +193,9 @@ namespace ExcelNumberFormat.Tests
             Test(new TimeSpan(0, -2, -31, -44, -500), "[hh]:mm:ss.000", "-02:31:44.500");
         }
 
-        void Test(object value, string format, string expected)
+        void Test(object value, string format, string expected, bool isDate1904 = false)
         {
-            var result = Format(value, format, CultureInfo.InvariantCulture);
+            var result = Format(value, format, CultureInfo.InvariantCulture, isDate1904);
             Assert.AreEqual(expected, result);
         }
 

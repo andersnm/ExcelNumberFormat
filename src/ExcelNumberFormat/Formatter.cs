@@ -7,7 +7,7 @@ namespace ExcelNumberFormat
 {
     static internal class Formatter
     {
-        static public string Format(object value, string formatString, CultureInfo culture)
+        static public string Format(object value, string formatString, CultureInfo culture, bool isDate1904)
         {
             var format = new NumberFormat(formatString);
             if (!format.IsValid)
@@ -17,10 +17,10 @@ namespace ExcelNumberFormat
             if (section == null)
                 return CompatibleConvert.ToString(value, culture);
 
-            return Format(value, section, culture);
+            return Format(value, section, culture, isDate1904);
         }
 
-        static public string Format(object value, Section node, CultureInfo culture)
+        static public string Format(object value, Section node, CultureInfo culture, bool isDate1904)
         {
             switch (node.Type)
             {
@@ -33,10 +33,25 @@ namespace ExcelNumberFormat
                     return FormatNumber(number, node.Number, culture);
 
                 case SectionType.Date:
-                    return FormatDate(Convert.ToDateTime(value, culture), node.GeneralTextDateDurationParts, culture);
+                    if (ExcelDateTime.TryConvert(value, isDate1904, culture, out var excelDateTime))
+                    {
+                        return FormatDate(excelDateTime, node.GeneralTextDateDurationParts, culture);
+                    }
+                    else
+                    {
+                        throw new FormatException("Unexpected date value");
+                    }
 
                 case SectionType.Duration:
-                    return FormatTimeSpan((TimeSpan)value, node.GeneralTextDateDurationParts, culture);
+                    if (value is TimeSpan ts)
+                    {
+                        return FormatTimeSpan(ts, node.GeneralTextDateDurationParts, culture);
+                    }
+                    else
+                    {
+                        var d = Convert.ToDouble(value);
+                        return FormatTimeSpan(TimeSpan.FromDays(d), node.GeneralTextDateDurationParts, culture);
+                    }
 
                 case SectionType.General:
                 case SectionType.Text:
@@ -139,7 +154,7 @@ namespace ExcelNumberFormat
             return result.ToString();
         }
 
-        private static string FormatDate(DateTime date, List<string> tokens, CultureInfo culture)
+        private static string FormatDate(ExcelDateTime date, List<string> tokens, CultureInfo culture)
         {
             var containsAmPm = ContainsAmPm(tokens);
 
@@ -226,7 +241,7 @@ namespace ExcelNumberFormat
                 }
                 else if (token.StartsWith("g", StringComparison.OrdinalIgnoreCase))
                 {
-                    var era = culture.DateTimeFormat.Calendar.GetEra(date);
+                    var era = culture.DateTimeFormat.Calendar.GetEra(date.AdjustedDateTime);
                     var digits = token.Length;
                     if (digits < 3)
                     {
