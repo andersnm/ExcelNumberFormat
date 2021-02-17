@@ -327,6 +327,8 @@ namespace ExcelNumberFormat.Tests
 
             Test(0, "0", "0");
 
+            Test((double)int.MaxValue, "# ?/?", $"{int.MaxValue}    ");
+            Test((double)int.MaxValue + 1, "# ?/?", $"{(long)int.MaxValue + 1}    ");
         }
 
         void TestExponents(double value, string expected1, string expected2, string expected3, string expected4)
