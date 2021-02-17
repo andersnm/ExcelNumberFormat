@@ -528,14 +528,14 @@ namespace ExcelNumberFormat
 
         static string FormatFraction(double value, Section format, CultureInfo culture)
         {
-            int integral = 0;
+            long integral = 0;
             int numerator, denominator;
 
             bool sign = value < 0;
 
             if (format.Fraction.IntegerPart != null)
             {
-                integral = (int)Math.Truncate(value);
+                integral = (long)Math.Truncate(value);
                 value = Math.Abs(value - integral);
             }
 
