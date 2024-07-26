@@ -35,7 +35,7 @@ namespace ExcelNumberFormat
                 case SectionType.Date:
                     if (ExcelDateTime.TryConvert(value, isDate1904, culture, out var excelDateTime))
                     {
-                        return FormatDate(excelDateTime, node.GeneralTextDateDurationParts, culture);
+                        return FormatDate(excelDateTime, node.GeneralTextDateDurationParts, culture, node.Lcid);
                     }
                     else
                     {
@@ -45,12 +45,12 @@ namespace ExcelNumberFormat
                 case SectionType.Duration:
                     if (value is TimeSpan ts)
                     {
-                        return FormatTimeSpan(ts, node.GeneralTextDateDurationParts, culture);
+                        return FormatTimeSpan(ts, node.GeneralTextDateDurationParts, culture, node.Lcid);
                     }
                     else
                     {
                         var d = Convert.ToDouble(value);
-                        return FormatTimeSpan(TimeSpan.FromDays(d), node.GeneralTextDateDurationParts, culture);
+                        return FormatTimeSpan(TimeSpan.FromDays(d), node.GeneralTextDateDurationParts, culture, node.Lcid);
                     }
 
                 case SectionType.General:
@@ -86,8 +86,13 @@ namespace ExcelNumberFormat
             return result.ToString();
         }
 
-        private static string FormatTimeSpan(TimeSpan timeSpan, List<string> tokens, CultureInfo culture)
+        private static string FormatTimeSpan(TimeSpan timeSpan, List<string> tokens, CultureInfo culture, WindowsLanguageCodeIdentifier lcid)
         {
+            if (lcid != null && lcid.IsLongSystemTime && lcid.TimeTokens?.Count > 0)
+            {
+                tokens = lcid.TimeTokens;
+            }
+
             // NOTE/TODO: assumes there is exactly one [hh], [mm] or [ss] using the integer part of TimeSpan.TotalXXX when formatting.
             // The timeSpan input is then truncated to the remainder fraction, which is used to format mm and/or ss.
             var result = new StringBuilder();
@@ -154,8 +159,13 @@ namespace ExcelNumberFormat
             return result.ToString();
         }
 
-        private static string FormatDate(ExcelDateTime date, List<string> tokens, CultureInfo culture)
+        private static string FormatDate(ExcelDateTime date, List<string> tokens, CultureInfo culture, WindowsLanguageCodeIdentifier lcid)
         {
+            if (lcid != null && lcid.IsLongSystemDate)
+            {
+                return date.ToString(culture.DateTimeFormat.LongDatePattern, culture);
+            }
+
             var containsAmPm = ContainsAmPm(tokens);
 
             var result = new StringBuilder();

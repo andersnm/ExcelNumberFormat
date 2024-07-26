@@ -110,6 +110,7 @@ namespace ExcelNumberFormat.Tests
             Assert.IsTrue(IsDateFormatString("mm:ss"));
             Assert.IsTrue(IsDateFormatString("mm:ss.0"));
             Assert.IsTrue(IsDateFormatString("[$-809]dd mmmm yyyy"));
+            Assert.IsTrue(IsDateFormatString(@"[$-F800]dddd\,\ mmmm\ dd\,\ yyyy"));
             Assert.IsFalse(IsDateFormatString("#,##0;[Red]-#,##0"));
             Assert.IsFalse(IsDateFormatString("0_);[Red](0)"));
             Assert.IsFalse(IsDateFormatString(@"0\h"));
@@ -143,6 +144,9 @@ namespace ExcelNumberFormat.Tests
             Test(new DateTime(2017, 10, 16, 0, 0, 0), "dddd,,, MMMM d,, yyyy,,,,", "Monday, October 16, 2017,");
             Test(new DateTime(2020, 1, 1, 0, 35, 55), "m/d/yyyy\\ hh:mm:ss AM/PM;@", "1/1/2020 12:35:55 AM");
             Test(new DateTime(2020, 1, 1, 12, 35, 55), "m/d/yyyy\\ hh:mm:ss AM/PM;@", "1/1/2020 12:35:55 PM");
+            Test(new DateTime(2017, 10, 16, 0, 0, 0), "[$-F800]m/d/yyyy\\ h:mm:ss a/P;@", "Monday, 16 October 2017");
+            Test(new DateTime(2017, 10, 16, 0, 0, 0), @"[$-F800]dddd\,\ mmmm\ dd\,\ yyyy", "Monday, 16 October 2017");
+            TestWithCulture(new CultureInfo("Fr-fr"), new DateTime(2017, 10, 16, 0, 0, 0), @"[$-F800]dddd\,\ mmmm\ dd\,\ yyyy", "lundi 16 octobre 2017");
         }
 
         [TestMethod]
@@ -192,11 +196,18 @@ namespace ExcelNumberFormat.Tests
             Test(new TimeSpan(0, -2, -31, -45), "[hh]:mm:ss", "-02:31:45");
             Test(new TimeSpan(0, -2, -31, -44, -500), "[hh]:mm:ss", "-02:31:45");
             Test(new TimeSpan(0, -2, -31, -44, -500), "[hh]:mm:ss.000", "-02:31:44.500");
+            Test(new TimeSpan(1, 2, 31, 44, 500), @"[$-F400]h:mm:ss\ AM/PM", "1.02:31:44.5000000");
+            TestWithCulture(new CultureInfo("Fr-fr"),new TimeSpan(1, 2, 31, 44, 500), @"[$-F400]h:mm:ss\ AM/PM", "1.02:31:44.5000000");
         }
 
         void Test(object value, string format, string expected, bool isDate1904 = false)
         {
-            var result = Format(value, format, CultureInfo.InvariantCulture, isDate1904);
+            TestWithCulture(CultureInfo.InvariantCulture, value, format, expected, isDate1904);
+        }
+
+        void TestWithCulture(CultureInfo culture, object value, string format, string expected, bool isDate1904 = false)
+        {
+            var result = Format(value, format, culture, isDate1904);
             Assert.AreEqual(expected, result);
         }
 

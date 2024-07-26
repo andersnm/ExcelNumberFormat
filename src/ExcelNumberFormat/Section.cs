@@ -19,5 +19,7 @@ namespace ExcelNumberFormat
         public DecimalSection Number { get; set; }
 
         public List<string> GeneralTextDateDurationParts { get; set; }
+
+        public WindowsLanguageCodeIdentifier Lcid { get; set; }
     }
 }

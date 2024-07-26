@@ -36,6 +36,7 @@ namespace ExcelNumberFormat
             bool hasPlaceholders = false;
             Condition condition = null;
             Color color = null;
+            WindowsLanguageCodeIdentifier localeIdentifier = null;
             string token;
             List<string> tokens = new List<string>();
 
@@ -72,6 +73,8 @@ namespace ExcelNumberFormat
                         condition = parseCondition;
                     else if (TryParseColor(expression, out var parseColor))
                         color = parseColor;
+                    else if (TryParseLocaleIdentifier(expression, out var parseLocaleIdentifier))
+                        localeIdentifier = parseLocaleIdentifier;
                     else if (TryParseCurrencySymbol(expression, out var parseCurrencySymbol))
                         tokens.Add("\"" + parseCurrencySymbol + "\"");
                 }
@@ -153,7 +156,8 @@ namespace ExcelNumberFormat
                 Fraction = fraction,
                 Exponential = exponential,
                 Number = number,
-                GeneralTextDateDurationParts = generalTextDateDuration
+                GeneralTextDateDurationParts = generalTextDateDuration,
+                Lcid = localeIdentifier
             };
         }
 
@@ -392,6 +396,49 @@ namespace ExcelNumberFormat
             else
                 currencySymbol = token.Substring(1);
 
+            return true;
+        }
+
+        private static bool TryParseLocaleIdentifier(string token, out WindowsLanguageCodeIdentifier lcid)
+        {
+            if (string.IsNullOrEmpty(token)
+                || !token.StartsWith("$-"))
+            {
+                lcid = null;
+                return false;
+            }
+
+            var localeStr = token.Substring(2);
+            if (!int.TryParse(localeStr, NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture, out int localeId))
+            {
+                lcid = null;
+                return false;
+            }
+
+            lcid = new WindowsLanguageCodeIdentifier { LocaleId = localeId };
+
+            if (!lcid.IsLongSystemTime) return true;
+
+            // because in .net 2.0, TimeSpan does not have a ToString method with arguments, we will parse here the long time pattern to get the tokens that will be used in the parser.
+
+            var timeTokensList = new List<string>();
+            var tokenizer = new Tokenizer(CultureInfo.CurrentCulture.DateTimeFormat.LongTimePattern);
+            string timeToken;
+            bool syntaxError;
+            
+            while ((timeToken = ReadToken(tokenizer, out syntaxError)) != null)
+            {
+                if (syntaxError)
+                {
+                    break;
+                }
+                timeTokensList.Add(timeToken);
+            }
+
+            if (!syntaxError)
+            {
+                lcid.TimeTokens = timeTokensList;
+            }
             return true;
         }
     }
