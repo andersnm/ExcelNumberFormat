@@ -25,12 +25,7 @@ namespace ExcelNumberFormat
             switch (node.Type)
             {
                 case SectionType.Number:
-                    // Hide sign under certain conditions and section index
-                    var number = Convert.ToDouble(value, culture);
-                    if ((node.SectionIndex == 0 && node.Condition != null) || node.SectionIndex == 1)
-                        number = Math.Abs(number);
-
-                    return FormatNumber(number, node.Number, culture);
+                    return FormatNumber(ToDoubleHidingSign(value, node, culture), node.Number, culture);
 
                 case SectionType.Date:
                     if (ExcelDateTime.TryConvert(value, isDate1904, culture, out var excelDateTime))
@@ -58,10 +53,10 @@ namespace ExcelNumberFormat
                     return FormatGeneralText(CompatibleConvert.ToString(value, culture), node.GeneralTextDateDurationParts);
 
                 case SectionType.Exponential:
-                    return FormatExponential(Convert.ToDouble(value, culture), node, culture);
+                    return FormatExponential(ToDoubleHidingSign(value, node, culture), node, culture);
 
                 case SectionType.Fraction:
-                    return FormatFraction(Convert.ToDouble(value, culture), node, culture);
+                    return FormatFraction(ToDoubleHidingSign(value, node, culture), node, culture);
 
                 default:
                     throw new InvalidOperationException("Unknown number format section");
@@ -347,6 +342,16 @@ namespace ExcelNumberFormat
             return false;
         }
 
+        // Hide sign under certain conditions and section index
+        static double ToDoubleHidingSign(object value, Section node, CultureInfo culture)
+        {
+            var number = Convert.ToDouble(value, culture);
+            if ((node.SectionIndex == 0 && node.Condition != null) || node.SectionIndex == 1)
+                number = Math.Abs(number);
+
+            return number;
+        }
+
         static string FormatNumber(double value, DecimalSection format, CultureInfo culture)
         {
             bool thousandSeparator = format.ThousandSeparator;
@@ -495,17 +500,34 @@ namespace ExcelNumberFormat
                 baseDigits = GetDigitCount(format.Exponential.BeforeDecimal);
             }
 
-            var exponent = (int)Math.Floor(Math.Log10(Math.Abs(value)));
-            var mantissa = value / Math.Pow(10, exponent);
+            var exponent = 0;
+            var mantissa = value;
+            var step = Math.Max(baseDigits, 1);
+            var afterDecimalDigits = format.Exponential.AfterDecimal != null ? GetDigitCount(format.Exponential.AfterDecimal) : 0;
 
-            var shift = Math.Abs(exponent) % baseDigits;
-            if (shift > 0)
+            // Zero has no exponent
+            if (value != 0)
             {
-                if (exponent < 0)
-                    shift = (baseDigits - shift);
+                exponent = (int)Math.Floor(Math.Log10(Math.Abs(value)));
+                mantissa = value / Math.Pow(10, exponent);
 
-                mantissa *= Math.Pow(10, shift);
-                exponent -= shift;
+                var shift = baseDigits > 0 ? Math.Abs(exponent) % baseDigits : 0;
+                if (shift > 0)
+                {
+                    if (exponent < 0)
+                        shift = (baseDigits - shift);
+
+                    mantissa *= Math.Pow(10, shift);
+                    exponent -= shift;
+                }
+
+                // Rounding the mantissa can carry it to the next power of ten, 9.999 with 0.00E+00 is 1.00E+01
+                var rounded = double.Parse(Math.Abs(mantissa).ToString("F" + afterDecimalDigits, CultureInfo.InvariantCulture), CultureInfo.InvariantCulture);
+                if (rounded >= Math.Pow(10, step))
+                {
+                    mantissa /= Math.Pow(10, step);
+                    exponent += step;
+                }
             }
 
             var result = new StringBuilder();
@@ -528,28 +550,45 @@ namespace ExcelNumberFormat
 
         static string FormatFraction(double value, Section format, CultureInfo culture)
         {
-            int integral = 0;
+            // A double, the whole part can be larger than an int
+            double integral = 0;
             int numerator, denominator;
 
             bool sign = value < 0;
+            value = Math.Abs(value);
 
             if (format.Fraction.IntegerPart != null)
             {
-                integral = (int)Math.Truncate(value);
-                value = Math.Abs(value - integral);
+                integral = Math.Truncate(value);
+                value -= integral;
             }
 
             if (format.Fraction.DenominatorConstant != 0)
             {
                 denominator = format.Fraction.DenominatorConstant;
                 var rr = Math.Round(value * denominator);
-                var b = Math.Floor(rr / denominator);
-                numerator = (int)(rr - b * denominator);
+
+                // Without an integer part the fraction stays improper (7/4), otherwise a carry goes to the integer part
+                if (format.Fraction.IntegerPart != null)
+                {
+                    var carry = Math.Floor(rr / denominator);
+                    integral += carry;
+                    rr -= carry * denominator;
+                }
+
+                numerator = (int)rr;
             }
             else
             {
                 var denominatorDigits = Math.Min(GetDigitCount(format.Fraction.Denominator), 7);
                 GetFraction(value, (int)Math.Pow(10, denominatorDigits) - 1, out numerator, out denominator);
+
+                if (format.Fraction.IntegerPart != null && numerator >= denominator)
+                {
+                    integral += numerator / denominator;
+                    numerator = 0;
+                    denominator = 1;
+                }
             }
 
             // Don't hide fraction if at least one zero in the numerator format
@@ -563,7 +602,7 @@ namespace ExcelNumberFormat
 
             // Print integer part with significant zero if fraction part is hidden
             if (format.Fraction.IntegerPart != null)
-                FormatThousands(Math.Abs(integral).ToString("F0", CultureInfo.InvariantCulture), false, hideFraction, format.Fraction.IntegerPart, culture, result);
+                FormatThousands(integral.ToString("F0", CultureInfo.InvariantCulture), false, hideFraction, format.Fraction.IntegerPart, culture, result);
 
             var numeratorString = Math.Abs(numerator).ToString("F0", CultureInfo.InvariantCulture);
             var denominatorString = denominator.ToString("F0", CultureInfo.InvariantCulture);
