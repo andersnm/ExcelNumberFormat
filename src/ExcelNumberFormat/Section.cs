@@ -19,5 +19,10 @@ namespace ExcelNumberFormat
         public DecimalSection Number { get; set; }
 
         public List<string> GeneralTextDateDurationParts { get; set; }
+
+        /// <summary>
+        /// The locale id from a [$-XXX] code, or 0 if the section has none.
+        /// </summary>
+        public int Lcid { get; set; }
     }
 }

@@ -36,6 +36,7 @@ namespace ExcelNumberFormat
             bool hasPlaceholders = false;
             Condition condition = null;
             Color color = null;
+            int lcid = 0;
             string token;
             List<string> tokens = new List<string>();
 
@@ -73,7 +74,10 @@ namespace ExcelNumberFormat
                     else if (TryParseColor(expression, out var parseColor))
                         color = parseColor;
                     else if (TryParseCurrencySymbol(expression, out var parseCurrencySymbol))
+                    {
                         tokens.Add("\"" + parseCurrencySymbol + "\"");
+                        TryParseLcid(expression, out lcid);
+                    }
                 }
                 else
                 {
@@ -153,7 +157,8 @@ namespace ExcelNumberFormat
                 Fraction = fraction,
                 Exponential = exponential,
                 Number = number,
-                GeneralTextDateDurationParts = generalTextDateDuration
+                GeneralTextDateDurationParts = generalTextDateDuration,
+                Lcid = lcid
             };
         }
 
@@ -393,6 +398,16 @@ namespace ExcelNumberFormat
                 currencySymbol = token.Substring(1);
 
             return true;
+        }
+
+        private static bool TryParseLcid(string token, out int lcid)
+        {
+            lcid = 0;
+            var index = token.IndexOf('-');
+            if (index < 0)
+                return false;
+
+            return int.TryParse(token.Substring(index + 1), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out lcid);
         }
     }
 }

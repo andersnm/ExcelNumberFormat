@@ -35,7 +35,7 @@ namespace ExcelNumberFormat
                 case SectionType.Date:
                     if (ExcelDateTime.TryConvert(value, isDate1904, culture, out var excelDateTime))
                     {
-                        return FormatDate(excelDateTime, node.GeneralTextDateDurationParts, culture);
+                        return FormatDate(excelDateTime, node.GeneralTextDateDurationParts, culture, node.Lcid);
                     }
                     else
                     {
@@ -154,7 +154,7 @@ namespace ExcelNumberFormat
             return result.ToString();
         }
 
-        private static string FormatDate(ExcelDateTime date, List<string> tokens, CultureInfo culture)
+        private static string FormatDate(ExcelDateTime date, List<string> tokens, CultureInfo culture, int lcid)
         {
             var containsAmPm = ContainsAmPm(tokens);
 
@@ -254,13 +254,17 @@ namespace ExcelNumberFormat
                 }
                 else if (string.Compare(token, "am/pm", StringComparison.OrdinalIgnoreCase) == 0)
                 {
-                    var ampm = date.ToString("tt", CultureInfo.InvariantCulture);
-                    result.Append(ampm.ToUpperInvariant());
+                    result.Append(GetAmPmDesignator(date.Hour, lcid, culture));
                 }
                 else if (string.Compare(token, "a/p", StringComparison.OrdinalIgnoreCase) == 0)
                 {
+                    // Excel only keeps the letters when the format has no locale code
                     var ampm = date.ToString("%t", CultureInfo.InvariantCulture);
-                    if (char.IsUpper(token[0]))
+                    if (lcid != 0)
+                    {
+                        result.Append(GetAmPmDesignator(date.Hour, lcid, culture));
+                    }
+                    else if (char.IsUpper(token[0]))
                     {
                         result.Append(ampm.ToUpperInvariant());
                     }
@@ -299,6 +303,35 @@ namespace ExcelNumberFormat
             }
 
             return result.ToString();
+        }
+
+        private static string GetAmPmDesignator(int hour, int lcid, CultureInfo culture)
+        {
+            var format = (lcid != 0 ? GetLcidCulture(lcid) : null) ?? culture;
+            var designator = hour < 12 ? format.DateTimeFormat.AMDesignator : format.DateTimeFormat.PMDesignator;
+            return string.IsNullOrEmpty(designator) ? (hour < 12 ? "AM" : "PM") : designator;
+        }
+
+        private static CultureInfo GetLcidCulture(int lcid)
+        {
+            // The language is in the low 16 bits, the rest selects calendar and numeral systems
+            var language = lcid & 0xFFFF;
+            if (language == 0)
+                return null;
+
+#if NETSTANDARD1_0
+            // Cultures cannot be looked up by id
+            return null;
+#else
+            try
+            {
+                return new CultureInfo(language);
+            }
+            catch (ArgumentException)
+            {
+                return null;
+            }
+#endif
         }
 
         private static bool LookAheadDatePart(List<string> tokens, int fromIndex, string startsWith)
