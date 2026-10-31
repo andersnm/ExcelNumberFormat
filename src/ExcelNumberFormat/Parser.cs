@@ -13,7 +13,7 @@ namespace ExcelNumberFormat
             syntaxError = false;
             while (true)
             {
-                var section = ParseSection(tokenizer, sections.Count, out var sectionSyntaxError);
+                var section = ParseSection(tokenizer, sections.Count, out var sectionSyntaxError, out var endedWithSeparator);
 
                 if (sectionSyntaxError)
                     syntaxError = true;
@@ -22,13 +22,35 @@ namespace ExcelNumberFormat
                     break;
 
                 sections.Add(section);
+
+                // A trailing separator ("0;") opens one more section, which is empty and hides the value.
+                if (endedWithSeparator && !tokenizer.HasMore)
+                {
+                    sections.Add(CreateEmptySection(sections.Count));
+                    break;
+                }
             }
 
             return sections;
         }
 
-        private static Section ParseSection(Tokenizer reader, int index, out bool syntaxError)
+        /// <summary>
+        /// An empty section, as in the middle of "0;;0". It formats every value as an empty string.
+        /// </summary>
+        private static Section CreateEmptySection(int index)
         {
+            return new Section()
+            {
+                Type = SectionType.Text,
+                SectionIndex = index,
+                GeneralTextDateDurationParts = new List<string>()
+            };
+        }
+
+        private static Section ParseSection(Tokenizer reader, int index, out bool syntaxError, out bool endedWithSeparator)
+        {
+            endedWithSeparator = false;
+            var invalidCondition = false;
             bool hasDateParts = false;
             bool hasDurationParts = false;
             bool hasGeneralPart = false;
@@ -43,7 +65,10 @@ namespace ExcelNumberFormat
             while ((token = ReadToken(reader, out syntaxError)) != null)
             {
                 if (token == ";")
+                {
+                    endedWithSeparator = true;
                     break;
+                }
 
                 hasPlaceholders |= Token.IsPlaceholder(token);
 
@@ -70,6 +95,8 @@ namespace ExcelNumberFormat
                     var expression = token.Substring(1, token.Length - 2);
                     if (TryParseCondition(expression, out var parseCondition))
                         condition = parseCondition;
+                    else if (IsConditionLike(expression))
+                        invalidCondition = true;
                     else if (TryParseColor(expression, out var parseColor))
                         color = parseColor;
                     else if (TryParseCurrencySymbol(expression, out var parseCurrencySymbol))
@@ -81,9 +108,16 @@ namespace ExcelNumberFormat
                 }
             }
 
-            if (syntaxError || tokens.Count == 0)
-            {
+            if (invalidCondition)
+                syntaxError = true;
+
+            if (syntaxError)
                 return null;
+
+            if (tokens.Count == 0)
+            {
+                // Empty section between separators ("0;;0"), as opposed to the end of the format
+                return endedWithSeparator ? CreateEmptySection(index) : null;
             }
 
             if (
@@ -307,17 +341,25 @@ namespace ExcelNumberFormat
                 {
                     var valueString = tokenizer.Substring(conditionPosition, tokenizer.Position - conditionPosition);
 
-                    result = new Condition()
+                    if (double.TryParse(valueString, NumberStyles.Float, CultureInfo.InvariantCulture, out var value))
                     {
-                        Operator = op,
-                        Value = double.Parse(valueString, CultureInfo.InvariantCulture)
-                    };
-                    return true;
+                        result = new Condition()
+                        {
+                            Operator = op,
+                            Value = value
+                        };
+                        return true;
+                    }
                 }
             }
 
             result = null;
             return false;
+        }
+
+        private static bool IsConditionLike(string token)
+        {
+            return token.Length > 0 && (token[0] == '<' || token[0] == '>' || token[0] == '=');
         }
 
         private static bool ReadConditionValue(Tokenizer tokenizer)
