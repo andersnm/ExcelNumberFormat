@@ -380,7 +380,7 @@ namespace ExcelNumberFormat
             if (afterDecimal != null)
                 signitificantDigits = GetDigitCount(afterDecimal);
 
-            var valueString = Math.Abs(value).ToString("F" + signitificantDigits, CultureInfo.InvariantCulture);
+            var valueString = RoundToFixed(Math.Abs(value), signitificantDigits);
             var valueStrings = valueString.Split('.');
             var thousandsString = valueStrings[0];
             var decimalString = valueStrings.Length > 1 ? valueStrings[1].TrimEnd('0') : "";
@@ -403,6 +403,22 @@ namespace ExcelNumberFormat
             {
                 FormatDecimals(decimalString, afterDecimal, result);
             }
+        }
+
+        /// <summary>
+        /// Formats a non-negative value with a fixed number of decimals, rounding half away from zero like Excel.
+        /// The double is first reduced to 15 significant digits, as Excel does, so 2.675 rounds to 2.68.
+        /// </summary>
+        static string RoundToFixed(double value, int digits)
+        {
+            if (digits <= 28 && value < 7.9e28)
+            {
+                var decimalValue = decimal.Parse(value.ToString("G15", CultureInfo.InvariantCulture), NumberStyles.Float, CultureInfo.InvariantCulture);
+                var rounded = Math.Round(decimalValue, digits, MidpointRounding.AwayFromZero);
+                return rounded.ToString("F" + digits, CultureInfo.InvariantCulture);
+            }
+
+            return value.ToString("F" + digits, CultureInfo.InvariantCulture);
         }
 
         /// <summary>
