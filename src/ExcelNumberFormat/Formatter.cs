@@ -121,21 +121,21 @@ namespace ExcelNumberFormat
                 }
                 else if (token.StartsWith("[h", StringComparison.OrdinalIgnoreCase))
                 {
-                    var value = (int)timeSpan.TotalHours;
+                    var value = (long)timeSpan.TotalHours;
                     var digits = token.Length - 2;
                     result.Append(value.ToString("D" + digits));
                     timeSpan = new TimeSpan(0, 0, Math.Abs(timeSpan.Minutes), Math.Abs(timeSpan.Seconds), Math.Abs(timeSpan.Milliseconds));
                 }
                 else if (token.StartsWith("[m", StringComparison.OrdinalIgnoreCase))
                 {
-                    var value = (int)timeSpan.TotalMinutes;
+                    var value = (long)timeSpan.TotalMinutes;
                     var digits = token.Length - 2;
                     result.Append(value.ToString("D" + digits));
                     timeSpan = new TimeSpan(0, 0, 0, Math.Abs(timeSpan.Seconds), Math.Abs(timeSpan.Milliseconds));
                 }
                 else if (token.StartsWith("[s", StringComparison.OrdinalIgnoreCase))
                 {
-                    var value = (int)timeSpan.TotalSeconds;
+                    var value = (long)timeSpan.TotalSeconds;
                     var digits = token.Length - 2;
                     result.Append(value.ToString("D" + digits));
                     timeSpan = new TimeSpan(0, 0, 0, 0, Math.Abs(timeSpan.Milliseconds));
@@ -485,6 +485,10 @@ namespace ExcelNumberFormat
 
         static string FormatExponential(double value, Section format, CultureInfo culture)
         {
+            // NaN and infinity have no digits to lay out
+            if (double.IsNaN(value) || double.IsInfinity(value))
+                return value.ToString(culture);
+
             // The application shall display a number to the right of 
             // the "E" symbol that corresponds to the number of places that 
             // the decimal point was moved. 
@@ -528,6 +532,10 @@ namespace ExcelNumberFormat
 
         static string FormatFraction(double value, Section format, CultureInfo culture)
         {
+            // NaN and infinity have no digits to lay out
+            if (double.IsNaN(value) || double.IsInfinity(value))
+                return value.ToString(culture);
+
             int integral = 0;
             int numerator, denominator;
 

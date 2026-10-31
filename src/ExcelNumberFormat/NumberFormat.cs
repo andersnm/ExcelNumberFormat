@@ -81,6 +81,16 @@ namespace ExcelNumberFormat
                 // Convert.ToDouble/ToDateTime exceptions
                 return CompatibleConvert.ToString(value, culture);
             }
+            catch (OverflowException)
+            {
+                // Values out of range for the format, such as an infinite duration
+                return CompatibleConvert.ToString(value, culture);
+            }
+            catch (ArgumentException)
+            {
+                // Includes ArgumentOutOfRangeException from DateTime and TimeSpan
+                return CompatibleConvert.ToString(value, culture);
+            }
         }
     }
 }
