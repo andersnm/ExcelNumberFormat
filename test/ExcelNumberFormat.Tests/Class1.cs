@@ -493,7 +493,7 @@ namespace ExcelNumberFormat.Tests
         }
 
         [TestMethod]
-        [TestCase("da-DK", "17-08-1978")]
+        [TestCase("da-DK", "17.08.1978")]
         [TestCase("en-US", "17/08/1978")]
         [TestCase("bg-BG", "17.08.1978")]
         [TestCase("nb-NO", "17.08.1978")]

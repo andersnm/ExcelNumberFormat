@@ -3,7 +3,7 @@ ExcelNumberFormat
 
 .NET library to parse ECMA-376 number format strings and format values like Excel and other spreadsheet softwares.
 
-[![Build status](https://ci.appveyor.com/api/projects/status/pg23vtba9wjr138f?svg=true)](https://ci.appveyor.com/project/andersnm/excelnumberformat)
+[![Build](https://github.com/andersnm/ExcelNumberFormat/actions/workflows/build.yml/badge.svg)](https://github.com/andersnm/ExcelNumberFormat/actions/workflows/build.yml)
 
 ## Install via NuGet
 
