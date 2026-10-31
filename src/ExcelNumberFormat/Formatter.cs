@@ -29,7 +29,8 @@ namespace ExcelNumberFormat
                     return FormatNumber(ToDoubleHidingSign(value, node, culture), node.Number, culture);
 
                 case SectionType.Date:
-                    if (ExcelDateTime.TryConvert(value, isDate1904, culture, out var excelDateTime))
+                    var dateValue = RoundSubSeconds(value, GetFractionDigits(node.GeneralTextDateDurationParts));
+                    if (ExcelDateTime.TryConvert(dateValue, isDate1904, culture, out var excelDateTime))
                     {
                         return FormatDate(excelDateTime, node.GeneralTextDateDurationParts, culture, node.Lcid);
                     }
@@ -39,13 +40,14 @@ namespace ExcelNumberFormat
                     }
 
                 case SectionType.Duration:
-                    if (value is TimeSpan ts)
+                    var durationValue = RoundSubSeconds(value, GetFractionDigits(node.GeneralTextDateDurationParts));
+                    if (durationValue is TimeSpan ts)
                     {
                         return FormatTimeSpan(ts, node.GeneralTextDateDurationParts, culture, node.Lcid);
                     }
                     else
                     {
-                        var d = Convert.ToDouble(value);
+                        var d = Convert.ToDouble(durationValue);
                         return FormatTimeSpan(TimeSpan.FromDays(d), node.GeneralTextDateDurationParts, culture, node.Lcid);
                     }
 
@@ -62,6 +64,138 @@ namespace ExcelNumberFormat
                 default:
                     throw new InvalidOperationException("Unknown number format section");
             }
+        }
+
+        /// <summary>
+        /// Number of fractional second digits requested by a ".0" token, or 0 if there is none. Excel supports up to 3.
+        /// </summary>
+        static int GetFractionDigits(List<string> tokens)
+        {
+            var digits = 0;
+            foreach (var token in tokens)
+            {
+                if (token.StartsWith(".0"))
+                    digits = Math.Min(token.Length - 1, 3);
+            }
+
+            return digits;
+        }
+
+        /// <summary>
+        /// Prints the fractional seconds with exactly as many digits as the format asks for.
+        /// The value is expected to be rounded already by RoundSubSeconds.
+        /// </summary>
+        static string FormatSubSeconds(int milliseconds, int digits)
+        {
+            return "." + milliseconds.ToString("D3", CultureInfo.InvariantCulture).Substring(0, Math.Min(digits, 3)).PadRight(digits, '0');
+        }
+
+        /// <summary>
+        /// Rounds a date, time or duration to the displayed number of fractional second digits (half up, like Excel),
+        /// so that a carry ripples into the seconds, minutes and hours.
+        /// </summary>
+        static object RoundSubSeconds(object value, int digits)
+        {
+            if (digits == 0)
+                return value;
+
+            if (value is double)
+                return RoundSubSeconds((double)value, digits);
+
+            if (value is DateTime)
+            {
+                var dt = (DateTime)value;
+                var unit = TicksPerFractionDigit(digits);
+                var roundedTicks = (dt.Ticks + unit / 2) / unit * unit;
+                return roundedTicks > DateTime.MaxValue.Ticks ? dt : new DateTime(roundedTicks, dt.Kind);
+            }
+
+            if (value is TimeSpan)
+            {
+                var ts = (TimeSpan)value;
+                var unit = TicksPerFractionDigit(digits);
+                if (ts.Ticks == long.MinValue || Math.Abs(ts.Ticks) > long.MaxValue - unit)
+                    return ts;
+
+                var roundedTicks = (Math.Abs(ts.Ticks) + unit / 2) / unit * unit;
+                return new TimeSpan(ts.Ticks < 0 ? -roundedTicks : roundedTicks);
+            }
+
+            return value;
+        }
+
+        static long TicksPerFractionDigit(int digits)
+        {
+            var unit = TimeSpan.TicksPerSecond;
+            for (var i = 0; i < digits; i++)
+                unit /= 10;
+            return unit;
+        }
+
+        /// <summary>
+        /// Rounds a numeric day count to a whole number of 10^-digits seconds, half away from zero on the exact value of the double.
+        /// Excel does the same: 3661.25 seconds is stored just below .25 and shows as .2, while 12.35 is stored just above and shows as .4.
+        /// Uses 128-bit integer arithmetic, as System.Numerics is not available on all target frameworks.
+        /// </summary>
+        static double RoundSubSeconds(double value, int digits)
+        {
+            if (double.IsNaN(value) || double.IsInfinity(value) || Math.Abs(value) > 1e7)
+                return value;
+
+            // |value| = mantissa * 2^exponent
+            var bits = BitConverter.DoubleToInt64Bits(Math.Abs(value));
+            var exponent = (int)((bits >> 52) & 0x7FF);
+            var mantissa = (ulong)(bits & 0xFFFFFFFFFFFFFL);
+            if (exponent == 0)
+                exponent++;
+            else
+                mantissa |= 1UL << 52;
+            exponent -= 1075;
+
+            // Units per day: 86400 seconds, each split in 10^digits parts
+            ulong unitsPerDay = 86400;
+            for (var i = 0; i < digits; i++)
+                unitsPerDay *= 10;
+
+            ulong units;
+            if (exponent >= 0)
+            {
+                units = (mantissa << exponent) * unitsPerDay;
+            }
+            else
+            {
+                // mantissa * unitsPerDay needs up to 80 bits: (hi, lo) = p1 * 2^32 + p0
+                var p0 = (mantissa & 0xFFFFFFFFUL) * unitsPerDay;
+                var p1 = (mantissa >> 32) * unitsPerDay;
+                var lo = p0 + (p1 << 32);
+                var hi = (p1 >> 32) + (lo < p0 ? 1UL : 0UL);
+
+                // Add one half, then divide by 2^shift
+                var shift = -exponent;
+                if (shift > 80)
+                {
+                    units = 0;
+                }
+                else
+                {
+                    if (shift - 1 < 64)
+                    {
+                        var half = 1UL << (shift - 1);
+                        lo += half;
+                        if (lo < half)
+                            hi++;
+                    }
+                    else
+                    {
+                        hi += 1UL << (shift - 65);
+                    }
+
+                    units = shift < 64 ? (lo >> shift) | (hi << (64 - shift)) : hi >> (shift - 64);
+                }
+            }
+
+            var rounded = (double)units / (double)unitsPerDay;
+            return value < 0 ? -rounded : rounded;
         }
 
         static string FormatGeneralText(string text, List<string> tokens)
@@ -142,9 +276,7 @@ namespace ExcelNumberFormat
                     timeSpan = new TimeSpan(0, 0, 0, 0, Math.Abs(timeSpan.Milliseconds));
                 }
                 else if (token.StartsWith(".0")) {
-                    var value = timeSpan.Milliseconds;
-                    var digits = token.Length - 1;
-                    result.Append("." + value.ToString("D" + digits));
+                    result.Append(FormatSubSeconds(timeSpan.Milliseconds, token.Length - 1));
                 }
                 else
                 {
@@ -281,9 +413,7 @@ namespace ExcelNumberFormat
                 }
                 else if (token.StartsWith(".0"))
                 {
-                    var value = date.Millisecond;
-                    var digits = token.Length - 1;
-                    result.Append("." + value.ToString("D" + digits));
+                    result.Append(FormatSubSeconds(date.Millisecond, token.Length - 1));
                 }
                 else if (token == "/")
                 {
