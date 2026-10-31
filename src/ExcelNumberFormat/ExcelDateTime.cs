@@ -107,6 +107,13 @@ namespace ExcelNumberFormat
         {
             if (value is double doubleValue)
             {
+                // NaN, infinity and serials outside the DateTime range have no date
+                if (double.IsNaN(doubleValue) || Math.Abs(doubleValue) > 1e7)
+                {
+                    result = null;
+                    return false;
+                }
+
                 result = new ExcelDateTime(doubleValue, isDate1904);
                 return true;
             }
