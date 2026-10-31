@@ -102,11 +102,11 @@ namespace ExcelNumberFormat
                         color = parseColor;
                     else if (TryParseLocaleIdentifier(expression, out var parseLocaleIdentifier))
                         localeIdentifier = parseLocaleIdentifier;
-                    else if (TryParseCurrencySymbol(expression, out var parseCurrencySymbol))
+                    else if (TryParseCurrencySymbol(expression, out var parseCurrencySymbol, out var currencyLocaleIdentifier))
                     {
                         tokens.Add("\"" + parseCurrencySymbol + "\"");
-                        if (TryParseLcid(expression, out var currencyLcid))
-                            localeIdentifier = new WindowsLanguageCodeIdentifier { LocaleId = currencyLcid };
+                        if (currencyLocaleIdentifier != null)
+                            localeIdentifier = currencyLocaleIdentifier;
                     }
                 }
                 else
@@ -305,7 +305,8 @@ namespace ExcelNumberFormat
                 reader.ReadOneOrMore('s') ||
                 reader.ReadOneOrMore('S') ||
                 reader.ReadOneOrMore('g') ||
-                reader.ReadOneOrMore('G'))
+                reader.ReadOneOrMore('G') ||
+                reader.ReadOneOrMore('e'))
             {
                 syntaxError = false;
                 var length = reader.Position - offset;
@@ -427,8 +428,9 @@ namespace ExcelNumberFormat
             return false;
         }
 
-        private static bool TryParseCurrencySymbol(string token, out string currencySymbol)
+        private static bool TryParseCurrencySymbol(string token, out string currencySymbol, out WindowsLanguageCodeIdentifier lcid)
         {
+            lcid = null;
             if (string.IsNullOrEmpty(token)
                 || !token.StartsWith("$"))
             {
@@ -436,9 +438,12 @@ namespace ExcelNumberFormat
                 return false;
             }
 
-
             if (token.Contains("-"))
+            {
                 currencySymbol = token.Substring(1, token.IndexOf('-') - 1);
+                if (int.TryParse(token.Substring(token.IndexOf('-') + 1), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var localeId) && localeId != 0)
+                    lcid = new WindowsLanguageCodeIdentifier { LocaleId = localeId };
+            }
             else
                 currencySymbol = token.Substring(1);
 
@@ -486,16 +491,6 @@ namespace ExcelNumberFormat
                 lcid.TimeTokens = timeTokensList;
             }
             return true;
-        }
-
-        private static bool TryParseLcid(string token, out int lcid)
-        {
-            lcid = 0;
-            var index = token.IndexOf('-');
-            if (index < 0)
-                return false;
-
-            return int.TryParse(token.Substring(index + 1), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out lcid);
         }
     }
 }

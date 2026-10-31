@@ -70,6 +70,7 @@ namespace ExcelNumberFormat
                 token.StartsWith("s", StringComparison.OrdinalIgnoreCase) ||
                 token.StartsWith("h", StringComparison.OrdinalIgnoreCase) ||
                 (token.StartsWith("g", StringComparison.OrdinalIgnoreCase) && !IsGeneral(token)) ||
+                (token[0] == 'e' && !IsExponent(token)) ||
                 string.Compare(token, "am/pm", StringComparison.OrdinalIgnoreCase) == 0 ||
                 string.Compare(token, "a/p", StringComparison.OrdinalIgnoreCase) == 0 ||
                 IsDurationPart(token);

@@ -7,6 +7,8 @@ namespace ExcelNumberFormat
 {
     static internal class Formatter
     {
+        private const int JapaneseLcid = 0x411;
+
         static public string Format(object value, string formatString, CultureInfo culture, bool isDate1904)
         {
             var format = new NumberFormat(formatString);
@@ -296,6 +298,9 @@ namespace ExcelNumberFormat
 
             var containsAmPm = ContainsAmPm(tokens);
 
+            // Only the Japanese locale prints the era name and counts years from the start of the era
+            var japaneseEra = lcid != null && lcid.LocaleId == JapaneseLcid ? JapaneseEra.Find(date.AdjustedDateTime) : null;
+
             var result = new StringBuilder();
             for (var i = 0; i < tokens.Count; i++)
             {
@@ -376,6 +381,22 @@ namespace ExcelNumberFormat
                 {
                     var digits = token.Length;
                     result.Append(date.Second.ToString("D" + digits));
+                }
+                else if (token.StartsWith("g", StringComparison.OrdinalIgnoreCase) && japaneseEra != null)
+                {
+                    result.Append(token.Length == 1 ? japaneseEra.Initial : token.Length == 2 ? japaneseEra.ShortName : japaneseEra.Name);
+                }
+                else if (token[0] == 'e')
+                {
+                    // Other locales print the four digit year
+                    if (japaneseEra != null)
+                        result.Append((date.Year - japaneseEra.StartYear + 1).ToString("D" + (Token.IsExponent(token) ? 1 : Math.Min(token.Length, 2))));
+                    else
+                        result.Append(date.Year.ToString("D4"));
+
+                    // "e-" and "e+" are exponents in a number, but an era year and a literal in a date
+                    if (Token.IsExponent(token))
+                        result.Append(token[1]);
                 }
                 else if (token.StartsWith("g", StringComparison.OrdinalIgnoreCase))
                 {
