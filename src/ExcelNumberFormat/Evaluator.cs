@@ -16,7 +16,8 @@ namespace ExcelNumberFormat
                     if (sections.Count >= 4)
                         return sections[3];
 
-                    return null;
+                    // Fewer than four sections: Excel applies the text-only section containing '@', if any.
+                    return GetTextSectionWithPlaceholder(sections);
 
                 case DateTime dt:
                     // TODO: Check date conditions need date helpers and Date1904 knowledge
@@ -37,6 +38,17 @@ namespace ExcelNumberFormat
                 default:
                     return null;
             }
+        }
+
+        private static Section GetTextSectionWithPlaceholder(List<Section> sections)
+        {
+            foreach (var section in sections)
+            {
+                if (section.Type == SectionType.Text && section.GeneralTextDateDurationParts.Contains("@"))
+                    return section;
+            }
+
+            return null;
         }
 
         public static Section GetFirstSection(List<Section> sections, SectionType type)
