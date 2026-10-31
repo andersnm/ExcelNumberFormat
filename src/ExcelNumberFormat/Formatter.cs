@@ -13,11 +13,12 @@ namespace ExcelNumberFormat
             if (!format.IsValid)
                 return CompatibleConvert.ToString(value, culture);
 
-            var section = Evaluator.GetSection(format.Sections, value);
+            var normalized = CompatibleConvert.Normalize(value);
+            var section = Evaluator.GetSection(format.Sections, normalized);
             if (section == null)
                 return CompatibleConvert.ToString(value, culture);
 
-            return Format(value, section, culture, isDate1904);
+            return Format(normalized, section, culture, isDate1904);
         }
 
         static public string Format(object value, Section node, CultureInfo culture, bool isDate1904)
