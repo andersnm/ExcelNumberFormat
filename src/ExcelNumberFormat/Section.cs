@@ -12,6 +12,8 @@ namespace ExcelNumberFormat
 
         public Condition Condition { get; set; }
 
+        public int Lcid { get; set; }
+
         public ExponentialSection Exponential { get; set; }
 
         public FractionSection Fraction { get; set; }

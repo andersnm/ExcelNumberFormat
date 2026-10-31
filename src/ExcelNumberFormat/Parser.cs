@@ -36,6 +36,7 @@ namespace ExcelNumberFormat
             bool hasPlaceholders = false;
             Condition condition = null;
             Color color = null;
+            int lcid = 0;
             string token;
             List<string> tokens = new List<string>();
 
@@ -72,8 +73,12 @@ namespace ExcelNumberFormat
                         condition = parseCondition;
                     else if (TryParseColor(expression, out var parseColor))
                         color = parseColor;
-                    else if (TryParseCurrencySymbol(expression, out var parseCurrencySymbol))
+                    else if (TryParseCurrencySymbol(expression, out var parseCurrencySymbol, out var parseLcid))
+                    {
                         tokens.Add("\"" + parseCurrencySymbol + "\"");
+                        if (parseLcid != 0)
+                            lcid = parseLcid;
+                    }
                 }
                 else
                 {
@@ -149,6 +154,7 @@ namespace ExcelNumberFormat
                 Type = type,
                 SectionIndex = index,
                 Color = color,
+                Lcid = lcid,
                 Condition = condition,
                 Fraction = fraction,
                 Exponential = exponential,
@@ -263,7 +269,8 @@ namespace ExcelNumberFormat
                 reader.ReadOneOrMore('s') ||
                 reader.ReadOneOrMore('S') ||
                 reader.ReadOneOrMore('g') ||
-                reader.ReadOneOrMore('G'))
+                reader.ReadOneOrMore('G') ||
+                reader.ReadOneOrMore('e'))
             {
                 syntaxError = false;
                 var length = reader.Position - offset;
@@ -377,8 +384,9 @@ namespace ExcelNumberFormat
             return false;
         }
 
-        private static bool TryParseCurrencySymbol(string token, out string currencySymbol)
+        private static bool TryParseCurrencySymbol(string token, out string currencySymbol, out int lcid)
         {
+            lcid = 0;
             if (string.IsNullOrEmpty(token)
                 || !token.StartsWith("$"))
             {
@@ -388,7 +396,10 @@ namespace ExcelNumberFormat
 
 
             if (token.Contains("-"))
+            {
                 currencySymbol = token.Substring(1, token.IndexOf('-') - 1);
+                int.TryParse(token.Substring(token.IndexOf('-') + 1), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out lcid);
+            }
             else
                 currencySymbol = token.Substring(1);
 
