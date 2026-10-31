@@ -76,7 +76,11 @@ namespace ExcelNumberFormat
                     else if (TryParseLocaleIdentifier(expression, out var parseLocaleIdentifier))
                         localeIdentifier = parseLocaleIdentifier;
                     else if (TryParseCurrencySymbol(expression, out var parseCurrencySymbol))
+                    {
                         tokens.Add("\"" + parseCurrencySymbol + "\"");
+                        if (TryParseLcid(expression, out var currencyLcid))
+                            localeIdentifier = new WindowsLanguageCodeIdentifier { LocaleId = currencyLcid };
+                    }
                 }
                 else
                 {
@@ -440,6 +444,16 @@ namespace ExcelNumberFormat
                 lcid.TimeTokens = timeTokensList;
             }
             return true;
+        }
+
+        private static bool TryParseLcid(string token, out int lcid)
+        {
+            lcid = 0;
+            var index = token.IndexOf('-');
+            if (index < 0)
+                return false;
+
+            return int.TryParse(token.Substring(index + 1), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out lcid);
         }
     }
 }
