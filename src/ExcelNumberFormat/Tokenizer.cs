@@ -16,6 +16,8 @@ namespace ExcelNumberFormat
 
         public int Length => formatString?.Length ?? 0;
 
+        public bool HasMore => formatStringPosition < Length;
+
         public string Substring(int startIndex, int length)
         {
             return formatString.Substring(startIndex, length);

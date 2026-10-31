@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 
 namespace ExcelNumberFormat
@@ -188,15 +189,21 @@ namespace ExcelNumberFormat
 
             // Finally extract the detected token ranges
 
+            // A constant too large for an int is not a usable denominator
+            denominatorConstant = 0;
+            if (hasConstant && !int.TryParse(constant.ToString(), NumberStyles.None, CultureInfo.InvariantCulture, out denominatorConstant))
+            {
+                denominatorPrefix = null;
+                denominatorPart = null;
+                denominatorSuffix = null;
+                fractionSuffix = null;
+                return false;
+            }
+
             if (denominatorIndex > 0)
                 denominatorPrefix = tokens.GetRange(0, denominatorIndex);
             else
                 denominatorPrefix = null;
-
-            if (hasConstant)
-                denominatorConstant = int.Parse(constant.ToString());
-            else
-                denominatorConstant = 0;
 
             denominatorPart = tokens.GetRange(denominatorIndex, index - denominatorIndex);
 
