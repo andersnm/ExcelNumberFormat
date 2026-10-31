@@ -63,13 +63,14 @@ namespace ExcelNumberFormat
         /// <returns>The formatted string.</returns>
         public string Format(object value, CultureInfo culture, bool isDate1904 = false)
         {
-            var section = Evaluator.GetSection(Sections, value);
+            var normalized = CompatibleConvert.Normalize(value);
+            var section = Evaluator.GetSection(Sections, normalized);
             if (section == null)
                 return CompatibleConvert.ToString(value, culture);
 
             try
             {
-                return Formatter.Format(value, section, culture, isDate1904);
+                return Formatter.Format(normalized, section, culture, isDate1904);
             }
             catch (InvalidCastException)
             {
