@@ -38,6 +38,7 @@ namespace ExcelNumberFormat.Tests
             Test(59.996 / 86400, "mm:ss.00", "01:00.00");
             Test(59.96 / 86400, "ss.0", "00.0");
             Test(3599.96 / 86400, "mm:ss.0", "00:00.0");
+            Test(59.9 / 86400, "mm:ss", "01:00");
 
             Test(45498.123456, "mm:ss.00", "57:46.60");
             Test(45498.123456, "yyyy-mm-dd hh:mm:ss.0", "2024-07-25 02:57:46.6");
@@ -54,6 +55,7 @@ namespace ExcelNumberFormat.Tests
             Test(new TimeSpan(0, 0, 2, 5, 760), "[mm]:ss.00", "02:05.76");
             Test(new TimeSpan(0, 0, 2, 5, 760), "[mm]:ss.0", "02:05.8");
             Test(new TimeSpan(0, 0, 0, 59, 960), "[mm]:ss.0", "01:00.0");
+            Test(new TimeSpan(0, 0, 0, 59, 960), "[mm]:ss", "01:00");
         }
     }
 }

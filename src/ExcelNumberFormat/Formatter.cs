@@ -98,9 +98,6 @@ namespace ExcelNumberFormat
         /// </summary>
         static object RoundSubSeconds(object value, int digits)
         {
-            if (digits == 0)
-                return value;
-
             if (value is double)
                 return RoundSubSeconds((double)value, digits);
 
@@ -228,15 +225,6 @@ namespace ExcelNumberFormat
             // NOTE/TODO: assumes there is exactly one [hh], [mm] or [ss] using the integer part of TimeSpan.TotalXXX when formatting.
             // The timeSpan input is then truncated to the remainder fraction, which is used to format mm and/or ss.
             var result = new StringBuilder();
-            var containsMilliseconds = false;
-            for (var i = tokens.Count - 1; i >= 0; i--)
-            {
-                if (tokens[i].StartsWith(".0"))
-                {
-                    containsMilliseconds = true;
-                    break;
-                }
-            }
 
             for (var i = 0; i < tokens.Count; i++)
             {
@@ -250,9 +238,7 @@ namespace ExcelNumberFormat
                 }
                 else if (token.StartsWith("s", StringComparison.OrdinalIgnoreCase))
                 {
-                    // If format does not include ms, then include ms in seconds and round before printing
-                    var formatMs = containsMilliseconds ? 0 : timeSpan.Milliseconds / 1000D;
-                    var value = (int)Math.Round(timeSpan.Seconds + formatMs, 0, MidpointRounding.AwayFromZero);
+                    var value = timeSpan.Seconds;
                     var digits = token.Length;
                     result.Append(value.ToString("D" + digits));
                 }
